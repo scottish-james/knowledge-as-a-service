@@ -1,14 +1,31 @@
 {
-  "name": "untitled",
+  "name": "knowledge-governance-app",
   "version": "1.0.0",
-  "description": "",
-  "main": "dist/index.js",
+  "homepage": "https://scottish-james.github.io/knowledge-as-a-service",
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "lucide-react": "^0.263.1"
+  },
   "scripts": {
-    "build": "tsc"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
   },
-  "dependencies": {},
   "devDependencies": {
-    "typescript": "^5.5.3"
+    "react-scripts": "5.0.1"
   },
-  "private": true
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
