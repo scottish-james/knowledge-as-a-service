@@ -1,20 +1,22 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
+import AppLayout from './components/layouts/AppLayout';
+import { Card, Button, Badge } from './components/common';
+import { Checkbox } from './components/common/FormElements';
+// New components we'll need to create:
+// import { ProgressBar, StatCard, Modal, Sidebar, StatusBar, Table, HeatMapBar, IssueCard, ActionItem } from './components/common';
+
 import {
     ArrowLeft, Save, Eye, Play, AlertTriangle, CheckCircle,
     XCircle, TrendingUp, Users, Calendar, Tag, Shield,
     BarChart, Clock, GitBranch, MessageSquare, Info,
-    ChevronDown, ChevronRight, Hash, List, Code, Table,
+    ChevronDown, ChevronRight, Hash, List, Code, Table as TableIcon,
     Image, FileText, HelpCircle, Sparkles, Bold, Italic,
     Link, Quote, Minus, Plus, Type, ListOrdered, CheckSquare,
     AlertCircle, Box, Workflow, Send, X, Edit3, BookOpen,
     Activity, Target, Zap, Database, RefreshCw, Settings
 } from 'lucide-react';
 
-// For now, let's create a simplified version without Yoopta
-// We'll use a rich text editor approach that works without external dependencies
-
-const KnowledgeUpdateWorkflow = ({ onBack }) => {
-    const [currentView, setCurrentView] = useState('editor');
+const KnowledgeUpdateWorkflow = ({ activeTab, onTabChange }) => {
     const [selectedDocument, setSelectedDocument] = useState(null);
     const [showImpactAnalysis, setShowImpactAnalysis] = useState(false);
     const [showMarkdownGuide, setShowMarkdownGuide] = useState(false);
@@ -91,9 +93,9 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
     }, [editorBlocks]);
 
     const DocumentList = () => (
-        <div className="p-6">
+        <div className="max-w-7xl mx-auto px-6 py-8">
             <div className="mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Update Knowledge Documents</h2>
+                <h2 className="text-2xl font-semibold text-gray-900 mb-2">Update Knowledge Documents</h2>
                 <p className="text-gray-600">Select a document to edit and analyse impact on AI agents</p>
             </div>
 
@@ -101,49 +103,56 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                 {documents.map(doc => (
                     <div
                         key={doc.id}
-                        className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => setSelectedDocument(doc)}
+                        onClick={() => {
+                            console.log('Document clicked:', doc.title);
+                            setSelectedDocument(doc);
+                        }}
+                        className="cursor-pointer"
                     >
-                        <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <h3 className="text-lg font-semibold text-gray-900">{doc.title}</h3>
-                                    <span className={`px-2 py-1 text-xs rounded-full ${
-                                        doc.status === 'published' ? 'bg-green-100 text-green-700' :
-                                            doc.status === 'draft' ? 'bg-gray-100 text-gray-700' :
-                                                'bg-yellow-100 text-yellow-700'
-                                    }`}>
-                    {doc.status}
-                  </span>
+                        <Card className="hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between">
+                                <div className="flex-1">
+                                    <div className="flex items-center gap-3 mb-2">
+                                        <h3 className="text-lg font-semibold text-gray-900">{doc.title}</h3>
+                                        <Badge
+                                            variant={
+                                                doc.status === 'published' ? 'success' :
+                                                    doc.status === 'draft' ? 'neutral' :
+                                                        'warning'
+                                            }
+                                        >
+                                            {doc.status}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="flex items-center gap-6 text-sm text-gray-600">
+                                    <span className="flex items-center gap-1">
+                                        <Clock size={14} />
+                                        {doc.lastUpdated}
+                                    </span>
+                                        <span className="flex items-center gap-1">
+                                        <Users size={14} />
+                                            {doc.owner}
+                                    </span>
+                                        <span className="flex items-center gap-1">
+                                        <Calendar size={14} />
+                                        Review: {doc.nextReview}
+                                    </span>
+                                    </div>
                                 </div>
 
-                                <div className="flex items-center gap-6 text-sm text-gray-600">
-                  <span className="flex items-center gap-1">
-                    <Clock size={14} />
-                      {doc.lastUpdated}
-                  </span>
-                                    <span className="flex items-center gap-1">
-                    <Users size={14} />
-                                        {doc.owner}
-                  </span>
-                                    <span className="flex items-center gap-1">
-                    <Calendar size={14} />
-                    Review: {doc.nextReview}
-                  </span>
+                                <div className="flex gap-4 text-center">
+                                    <div>
+                                        <div className="text-2xl font-bold text-primary-600">{doc.usage.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">Total Usage</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-2xl font-bold text-blue-600">{doc.agents}</div>
+                                        <div className="text-xs text-gray-500">AI Agents</div>
+                                    </div>
                                 </div>
                             </div>
-
-                            <div className="flex gap-4 text-center">
-                                <div>
-                                    <div className="text-2xl font-bold text-purple-600">{doc.usage.toLocaleString()}</div>
-                                    <div className="text-xs text-gray-500">Total Usage</div>
-                                </div>
-                                <div>
-                                    <div className="text-2xl font-bold text-blue-600">{doc.agents}</div>
-                                    <div className="text-xs text-gray-500">AI Agents</div>
-                                </div>
-                            </div>
-                        </div>
+                        </Card>
                     </div>
                 ))}
             </div>
@@ -156,80 +165,36 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
             style={{ left: blockMenuPosition.x, top: blockMenuPosition.y }}
         >
             <div className="text-xs font-semibold text-gray-500 px-2 py-1 mb-1">BASIC BLOCKS</div>
-            <button
-                onClick={() => {
-                    const newBlock = {
-                        id: Date.now().toString(),
-                        type: 'p',
-                        content: ''
-                    };
-                    setEditorBlocks([...editorBlocks, newBlock]);
-                    setShowBlockMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-3 text-sm"
-            >
-                <Type size={18} className="text-gray-500" />
-                <div>
-                    <div className="font-medium">Text</div>
-                    <div className="text-xs text-gray-500">Start writing with plain text</div>
-                </div>
-            </button>
-            <button
-                onClick={() => {
-                    const newBlock = {
-                        id: Date.now().toString(),
-                        type: 'h2',
-                        content: 'New Heading'
-                    };
-                    setEditorBlocks([...editorBlocks, newBlock]);
-                    setShowBlockMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-3 text-sm"
-            >
-                <Hash size={18} className="text-gray-500" />
-                <div>
-                    <div className="font-medium">Heading</div>
-                    <div className="text-xs text-gray-500">Large, medium, small</div>
-                </div>
-            </button>
-            <button
-                onClick={() => {
-                    const newBlock = {
-                        id: Date.now().toString(),
-                        type: 'code',
-                        language: 'javascript',
-                        content: '// Your code here'
-                    };
-                    setEditorBlocks([...editorBlocks, newBlock]);
-                    setShowBlockMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-3 text-sm"
-            >
-                <Code size={18} className="text-gray-500" />
-                <div>
-                    <div className="font-medium">Code Block</div>
-                    <div className="text-xs text-gray-500">Add code with syntax highlighting</div>
-                </div>
-            </button>
-            <button
-                onClick={() => {
-                    const newBlock = {
-                        id: Date.now().toString(),
-                        type: 'callout',
-                        variant: 'info',
-                        content: 'Important information'
-                    };
-                    setEditorBlocks([...editorBlocks, newBlock]);
-                    setShowBlockMenu(false);
-                }}
-                className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-3 text-sm"
-            >
-                <Info size={18} className="text-gray-500" />
-                <div>
-                    <div className="font-medium">Callout</div>
-                    <div className="text-xs text-gray-500">Make text stand out</div>
-                </div>
-            </button>
+            {[
+                { type: 'p', icon: Type, title: 'Text', desc: 'Start writing with plain text' },
+                { type: 'h2', icon: Hash, title: 'Heading', desc: 'Large, medium, small' },
+                { type: 'code', icon: Code, title: 'Code Block', desc: 'Add code with syntax highlighting' },
+                { type: 'callout', icon: Info, title: 'Callout', desc: 'Make text stand out' }
+            ].map((item) => (
+                <button
+                    key={item.type}
+                    onClick={() => {
+                        const newBlock = {
+                            id: Date.now().toString(),
+                            type: item.type,
+                            content: item.type === 'h2' ? 'New Heading' :
+                                item.type === 'code' ? '// Your code here' :
+                                    item.type === 'callout' ? 'Important information' : '',
+                            ...(item.type === 'code' && { language: 'javascript' }),
+                            ...(item.type === 'callout' && { variant: 'info' })
+                        };
+                        setEditorBlocks([...editorBlocks, newBlock]);
+                        setShowBlockMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center gap-3 text-sm transition-colors"
+                >
+                    <item.icon size={18} className="text-gray-500" />
+                    <div>
+                        <div className="font-medium">{item.title}</div>
+                        <div className="text-xs text-gray-500">{item.desc}</div>
+                    </div>
+                </button>
+            ))}
         </div>
     );
 
@@ -237,19 +202,16 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
         const [localContent, setLocalContent] = useState(block.content);
         const blockRef = useRef(null);
 
-        // Keep local content in sync with props
         useEffect(() => {
             setLocalContent(block.content);
         }, [block.content]);
 
-        // Update parent state on blur or after a delay
         useEffect(() => {
             const timeoutId = setTimeout(() => {
                 if (localContent !== block.content) {
                     onUpdate(block.id, localContent);
                 }
-            }, 500); // Debounce updates
-
+            }, 500);
             return () => clearTimeout(timeoutId);
         }, [localContent, block.id, block.content, onUpdate]);
 
@@ -262,17 +224,14 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
         };
 
         const handleKeyDown = (e) => {
-            // Handle slash command
             if (e.key === '/' && e.target.innerText === '') {
                 e.preventDefault();
                 const rect = e.target.getBoundingClientRect();
                 setBlockMenuPosition({ x: rect.left, y: rect.bottom + 5 });
                 setShowBlockMenu(true);
             }
-            // Handle enter key
             else if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
-                // Save current block
                 onUpdate(block.id, localContent);
 
                 const newBlock = {
@@ -284,12 +243,11 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                 const newBlocks = [...editorBlocks];
                 newBlocks.splice(index + 1, 0, newBlock);
                 setEditorBlocks(newBlocks);
-                // Focus new block after render
+
                 setTimeout(() => {
                     const newElement = document.getElementById(`block-${newBlock.id}`);
                     if (newElement) {
                         newElement.focus();
-                        // Place cursor at beginning
                         const range = document.createRange();
                         const sel = window.getSelection();
                         range.setStart(newElement, 0);
@@ -299,17 +257,14 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                     }
                 }, 0);
             }
-            // Handle backspace on empty block
             else if (e.key === 'Backspace' && e.target.innerText === '' && editorBlocks.length > 1) {
                 e.preventDefault();
-                // Focus previous block before deleting
                 const index = editorBlocks.findIndex(b => b.id === block.id);
                 if (index > 0) {
                     const prevBlock = editorBlocks[index - 1];
                     const prevElement = document.getElementById(`block-${prevBlock.id}`);
                     if (prevElement) {
                         prevElement.focus();
-                        // Place cursor at end
                         const range = document.createRange();
                         const sel = window.getSelection();
                         range.selectNodeContents(prevElement);
@@ -323,69 +278,49 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
         };
 
         const renderBlock = () => {
+            const commonProps = {
+                ref: blockRef,
+                id: `block-${block.id}`,
+                contentEditable: true,
+                suppressContentEditableWarning: true,
+                onInput: handleInput,
+                onBlur: handleBlur,
+                onFocus: () => setActiveBlockId(block.id),
+                onKeyDown: handleKeyDown,
+                dangerouslySetInnerHTML: { __html: localContent || '' }
+            };
+
             switch (block.type) {
                 case 'h1':
                     return (
                         <h1
-                            ref={blockRef}
-                            id={`block-${block.id}`}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={handleInput}
-                            onBlur={handleBlur}
-                            onFocus={() => setActiveBlockId(block.id)}
-                            onKeyDown={handleKeyDown}
+                            {...commonProps}
                             className="text-3xl font-bold text-gray-900 focus:outline-none"
                             data-placeholder="Heading 1"
-                            dangerouslySetInnerHTML={{ __html: localContent || '' }}
                         />
                     );
                 case 'h2':
                     return (
                         <h2
-                            ref={blockRef}
-                            id={`block-${block.id}`}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={handleInput}
-                            onBlur={handleBlur}
-                            onFocus={() => setActiveBlockId(block.id)}
-                            onKeyDown={handleKeyDown}
+                            {...commonProps}
                             className="text-2xl font-semibold text-gray-900 mt-4 focus:outline-none"
                             data-placeholder="Heading 2"
-                            dangerouslySetInnerHTML={{ __html: localContent || '' }}
                         />
                     );
                 case 'h3':
                     return (
                         <h3
-                            ref={blockRef}
-                            id={`block-${block.id}`}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={handleInput}
-                            onBlur={handleBlur}
-                            onFocus={() => setActiveBlockId(block.id)}
-                            onKeyDown={handleKeyDown}
+                            {...commonProps}
                             className="text-xl font-semibold text-gray-900 mt-3 focus:outline-none"
                             data-placeholder="Heading 3"
-                            dangerouslySetInnerHTML={{ __html: localContent || '' }}
                         />
                     );
                 case 'p':
                     return (
                         <div
-                            ref={blockRef}
-                            id={`block-${block.id}`}
-                            contentEditable
-                            suppressContentEditableWarning
-                            onInput={handleInput}
-                            onBlur={handleBlur}
-                            onFocus={() => setActiveBlockId(block.id)}
-                            onKeyDown={handleKeyDown}
+                            {...commonProps}
                             className="text-gray-700 leading-relaxed focus:outline-none empty:before:content-[attr(data-placeholder)] empty:before:text-gray-400"
                             data-placeholder="Type '/' for commands"
-                            dangerouslySetInnerHTML={{ __html: localContent || '' }}
                         />
                     );
                 case 'code':
@@ -393,15 +328,8 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                         <div className="bg-gray-900 rounded-lg p-4 my-3">
                             <div className="text-xs text-gray-400 mb-2">{block.language || 'plain text'}</div>
                             <pre
-                                ref={blockRef}
-                                id={`block-${block.id}`}
-                                contentEditable
-                                suppressContentEditableWarning
-                                onInput={handleInput}
-                                onBlur={handleBlur}
-                                onFocus={() => setActiveBlockId(block.id)}
+                                {...commonProps}
                                 className="text-green-400 font-mono text-sm focus:outline-none"
-                                dangerouslySetInnerHTML={{ __html: localContent || '' }}
                             />
                         </div>
                     );
@@ -424,24 +352,17 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                 case 'callout':
                     return (
                         <div className={`
-              rounded-lg p-4 my-3 border-l-4
-              ${block.variant === 'info' ? 'bg-blue-50 border-blue-500 text-blue-900' : ''}
-              ${block.variant === 'warning' ? 'bg-yellow-50 border-yellow-500 text-yellow-900' : ''}
-              ${block.variant === 'success' ? 'bg-green-50 border-green-500 text-green-900' : ''}
-              ${block.variant === 'error' ? 'bg-red-50 border-red-500 text-red-900' : ''}
-            `}>
+                            rounded-lg p-4 my-3 border-l-4
+                            ${block.variant === 'info' ? 'bg-blue-50 border-blue-500 text-blue-900' : ''}
+                            ${block.variant === 'warning' ? 'bg-yellow-50 border-yellow-500 text-yellow-900' : ''}
+                            ${block.variant === 'success' ? 'bg-green-50 border-green-500 text-green-900' : ''}
+                            ${block.variant === 'error' ? 'bg-red-50 border-red-500 text-red-900' : ''}
+                        `}>
                             <div className="flex items-start gap-2">
                                 <Info size={18} className="mt-0.5 flex-shrink-0" />
                                 <div
-                                    ref={blockRef}
-                                    id={`block-${block.id}`}
-                                    contentEditable
-                                    suppressContentEditableWarning
-                                    onInput={handleInput}
-                                    onBlur={handleBlur}
-                                    onFocus={() => setActiveBlockId(block.id)}
+                                    {...commonProps}
                                     className="focus:outline-none flex-1"
-                                    dangerouslySetInnerHTML={{ __html: localContent || '' }}
                                 />
                             </div>
                         </div>
@@ -454,10 +375,10 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
         return (
             <div
                 className={`
-          group relative py-1
-          ${isActive ? 'bg-blue-50 bg-opacity-30' : ''}
-          hover:bg-gray-50 hover:bg-opacity-50
-        `}
+                    group relative py-1
+                    ${isActive ? 'bg-primary-50 bg-opacity-30' : ''}
+                    hover:bg-gray-50 hover:bg-opacity-50
+                `}
             >
                 <div className="absolute -left-12 top-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1">
                     <button
@@ -492,9 +413,9 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                         <div
                             key={heading.id}
                             className={`
-                flex items-center gap-2 p-2 rounded cursor-pointer
-                ${activeBlockId === heading.id ? 'bg-purple-50 border-l-2 border-purple-600' : 'hover:bg-gray-50'}
-              `}
+                                flex items-center gap-2 p-2 rounded cursor-pointer transition-colors
+                                ${activeBlockId === heading.id ? 'bg-primary-50 border-l-2 border-primary-600' : 'hover:bg-gray-50'}
+                            `}
                             style={{ marginLeft: `${(heading.level - 1) * 12}px` }}
                             onClick={() => {
                                 const element = document.getElementById(`block-${heading.id}`);
@@ -503,14 +424,14 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                             }}
                         >
                             <Hash size={16 - (heading.level - 1) * 2} className="text-gray-400" />
-                            <span className={`text-sm ${activeBlockId === heading.id ? 'font-medium text-purple-600' : ''}`}>
-                {heading.text}
-              </span>
+                            <span className={`text-sm ${activeBlockId === heading.id ? 'font-medium text-primary-600' : ''}`}>
+                                {heading.text}
+                            </span>
                         </div>
                     ))}
                 </div>
 
-                <div className="mt-8 p-4 bg-gray-50 rounded-lg">
+                <Card className="mt-8 bg-gray-50">
                     <h4 className="font-semibold text-gray-900 mb-3 text-sm">Document Stats</h4>
                     <div className="space-y-2 text-sm">
                         <div className="flex justify-between">
@@ -526,7 +447,7 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                             <span className="font-medium">{editorBlocks.filter(b => b.type === 'code').length}</span>
                         </div>
                     </div>
-                </div>
+                </Card>
             </div>
 
             {/* Main Editor */}
@@ -535,39 +456,39 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                 <div className="bg-white border-b border-gray-200 px-6 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                            <button
+                            <Button
+                                variant="text"
                                 onClick={() => setSelectedDocument(null)}
-                                className="flex items-center gap-2 text-gray-600 hover:text-gray-900"
+                                className="flex items-center gap-2"
                             >
                                 <ArrowLeft size={20} />
                                 Back
-                            </button>
+                            </Button>
                             <div className="h-6 w-px bg-gray-300" />
                             <h2 className="font-semibold text-gray-900">{selectedDocument?.title}</h2>
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full">
-                Editing
-              </span>
+                            <Badge variant="warning">Editing</Badge>
                         </div>
 
                         <div className="flex items-center gap-3">
-                            <button
+                            <Button
+                                variant="text"
                                 onClick={() => setShowMarkdownGuide(true)}
-                                className="flex items-center gap-2 px-3 py-1.5 text-gray-600 hover:text-gray-900"
+                                size="sm"
                             >
-                                <HelpCircle size={18} />
+                                <HelpCircle size={18} className="mr-2" />
                                 Editor Guide
-                            </button>
-                            <button className="flex items-center gap-2 px-4 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200">
-                                <Save size={18} />
+                            </Button>
+                            <Button variant="secondary" size="sm">
+                                <Save size={18} className="mr-2" />
                                 Save Draft
-                            </button>
-                            <button
+                            </Button>
+                            <Button
                                 onClick={() => setShowImpactAnalysis(true)}
-                                className="flex items-center gap-2 px-4 py-1.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
+                                size="sm"
                             >
-                                <Play size={18} />
+                                <Play size={18} className="mr-2" />
                                 Analyse & Publish
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>
@@ -592,7 +513,6 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                                 />
                             ))}
 
-                            {/* Add new block button */}
                             <div className="group py-2">
                                 <button
                                     onClick={() => {
@@ -613,7 +533,6 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                             </div>
                         </div>
 
-                        {/* Block menu */}
                         {showBlockMenu && (
                             <>
                                 <div
@@ -626,7 +545,7 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                     </div>
                 </div>
 
-                {/* Bottom Status Bar */}
+                {/* Bottom Status Bar - New Component Needed: StatusBar */}
                 <div className="bg-gray-50 border-t border-gray-200 px-6 py-2">
                     <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center gap-4 text-gray-600">
@@ -634,12 +553,10 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                             <span>•</span>
                             <span>Version 2.1.3</span>
                         </div>
-                        <div className="flex items-center gap-4">
-                            <button className="text-purple-600 hover:text-purple-700">
-                                <GitBranch size={16} className="inline mr-1" />
-                                Version History
-                            </button>
-                        </div>
+                        <Button variant="text" size="sm">
+                            <GitBranch size={16} className="mr-1" />
+                            Version History
+                        </Button>
                     </div>
                 </div>
             </div>
@@ -648,241 +565,199 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
             <div className="w-80 bg-white border-l border-gray-200 p-4 overflow-y-auto">
                 <h3 className="font-semibold text-gray-900 mb-4">Document Quality</h3>
 
-                <div className="mb-6">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-3xl font-bold text-purple-600">{documentScore}/100</span>
-                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
-              Grade: B+
-            </span>
+                <Card className="mb-6 bg-gray-50">
+                    <div className="flex items-center justify-between mb-4">
+                        <span className="text-3xl font-bold text-primary-600">{documentScore}/100</span>
+                        <Badge variant="success">Grade: B+</Badge>
                     </div>
 
+                    {/* Progress Bars - New Component Needed: ProgressBar */}
                     <div className="space-y-3">
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600">Completeness</span>
-                                <span className="font-medium">88%</span>
+                        {[
+                            { label: 'Completeness', value: 88, color: 'green' },
+                            { label: 'Clarity', value: 82, color: 'green' },
+                            { label: 'Structure', value: 95, color: 'green' },
+                            { label: 'Examples', value: 72, color: 'yellow' }
+                        ].map((metric) => (
+                            <div key={metric.label}>
+                                <div className="flex justify-between text-sm mb-1">
+                                    <span className="text-gray-600">{metric.label}</span>
+                                    <span className="font-medium">{metric.value}%</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                    <div
+                                        className={`h-2 rounded-full bg-${metric.color}-500`}
+                                        style={{ width: `${metric.value}%` }}
+                                    />
+                                </div>
                             </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '88%' }} />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600">Clarity</span>
-                                <span className="font-medium">82%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '82%' }} />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600">Structure</span>
-                                <span className="font-medium">95%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-green-500 h-2 rounded-full" style={{ width: '95%' }} />
-                            </div>
-                        </div>
-                        <div>
-                            <div className="flex justify-between text-sm mb-1">
-                                <span className="text-gray-600">Examples</span>
-                                <span className="font-medium">72%</span>
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-yellow-500 h-2 rounded-full" style={{ width: '72%' }} />
-                            </div>
-                        </div>
+                        ))}
                     </div>
-                </div>
+                </Card>
 
-                <div className="border-t border-gray-200 pt-4">
+                <Card className="mb-6">
                     <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                         <Target size={18} className="text-blue-600" />
                         AI Suggestions
                     </h4>
                     <div className="space-y-2">
-                        <div className="p-3 bg-blue-50 rounded-lg text-sm">
-                            <p className="text-blue-900 font-medium mb-1">Add more examples</p>
-                            <p className="text-blue-700">Section 3 would benefit from code examples</p>
+                        <div className="p-3 bg-blue-50 rounded-lg">
+                            <p className="text-blue-900 font-medium text-sm mb-1">Add more examples</p>
+                            <p className="text-blue-700 text-xs">Section 3 would benefit from code examples</p>
                         </div>
-                        <div className="p-3 bg-yellow-50 rounded-lg text-sm">
-                            <p className="text-yellow-900 font-medium mb-1">Define acronyms</p>
-                            <p className="text-yellow-700">First use of "JWT" needs definition</p>
+                        <div className="p-3 bg-yellow-50 rounded-lg">
+                            <p className="text-yellow-900 font-medium text-sm mb-1">Define acronyms</p>
+                            <p className="text-yellow-700 text-xs">First use of "JWT" needs definition</p>
                         </div>
                     </div>
-                </div>
+                </Card>
 
-                <div className="border-t border-gray-200 pt-4 mt-4">
+                <Card>
                     <h4 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Activity size={18} className="text-purple-600" />
+                        <Activity size={18} className="text-primary-600" />
                         Live Usage Stats
                     </h4>
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">Active agents</span>
-                            <span className="font-medium">12</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">Queries today</span>
-                            <span className="font-medium">247</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">Avg response time</span>
-                            <span className="font-medium">1.2s</span>
-                        </div>
+                        {[
+                            { label: 'Active agents', value: '12' },
+                            { label: 'Queries today', value: '247' },
+                            { label: 'Avg response time', value: '1.2s' }
+                        ].map((stat) => (
+                            <div key={stat.label} className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600">{stat.label}</span>
+                                <span className="font-medium">{stat.value}</span>
+                            </div>
+                        ))}
                     </div>
-                </div>
+                </Card>
             </div>
         </div>
     );
 
-    // Keep the ImpactAnalysisView and other components as they were...
+    // Keep all the helper components with design system updates
     const MarkdownGuide = () => (
-        <div className="fixed right-4 top-20 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-hidden flex flex-col">
-            <div className="p-4 border-b border-gray-200 flex items-center justify-between bg-gradient-to-r from-purple-600 to-blue-600 text-white">
-                <h3 className="font-semibold flex items-center gap-2">
-                    <BookOpen size={20} />
-                    Block Editor Guide
-                </h3>
-                <button onClick={() => setShowMarkdownGuide(false)}>
-                    <X size={20} />
-                </button>
+        <div className="fixed right-4 top-20 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50 max-h-[80vh] overflow-hidden flex flex-col">
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-blue-600 text-white rounded-t-xl">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2">
+                        <BookOpen size={20} />
+                        Block Editor Guide
+                    </h3>
+                    <button
+                        onClick={() => setShowMarkdownGuide(false)}
+                        className="hover:bg-white hover:bg-opacity-20 p-1 rounded transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
             </div>
 
             <div className="flex-1 overflow-y-auto p-4">
                 <div className="space-y-4">
-                    <div>
+                    <Card>
                         <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                            <Sparkles size={16} className="text-purple-600" />
+                            <Sparkles size={16} className="text-primary-600" />
                             Quick Commands
                         </h4>
                         <div className="space-y-2 text-sm">
-                            <div className="p-2 bg-gray-50 rounded">
-                                <span className="font-mono text-purple-600">/</span>
-                                <span className="ml-2">Open block menu</span>
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                                <span className="font-mono text-purple-600">Enter</span>
-                                <span className="ml-2">Create new block</span>
-                            </div>
-                            <div className="p-2 bg-gray-50 rounded">
-                                <span className="font-mono text-purple-600">Backspace</span>
-                                <span className="ml-2">Delete empty block</span>
-                            </div>
+                            {[
+                                { key: '/', desc: 'Open block menu' },
+                                { key: 'Enter', desc: 'Create new block' },
+                                { key: 'Backspace', desc: 'Delete empty block' }
+                            ].map((cmd) => (
+                                <div key={cmd.key} className="p-2 bg-gray-50 rounded">
+                                    <span className="font-mono text-primary-600">{cmd.key}</span>
+                                    <span className="ml-2">{cmd.desc}</span>
+                                </div>
+                            ))}
                         </div>
-                    </div>
+                    </Card>
 
-                    <div>
-                        <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
-                            <Code size={16} className="text-blue-600" />
-                            Block Types
-                        </h4>
-                        <ul className="space-y-2 text-sm text-gray-700">
-                            <li className="flex items-start gap-2">
-                                <Hash size={14} className="mt-0.5 text-gray-400" />
-                                <span>Headings - Organize your content</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <Type size={14} className="mt-0.5 text-gray-400" />
-                                <span>Paragraphs - Regular text content</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <Code size={14} className="mt-0.5 text-gray-400" />
-                                <span>Code blocks - Technical examples</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                                <Info size={14} className="mt-0.5 text-gray-400" />
-                                <span>Callouts - Highlight important info</span>
-                            </li>
-                        </ul>
-                    </div>
-
-                    <div>
+                    <Card>
                         <h4 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
                             <Zap size={16} className="text-yellow-600" />
                             Pro Tips
                         </h4>
                         <ul className="space-y-2 text-sm text-gray-700">
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <CheckCircle size={14} className="text-green-500 mt-0.5" />
                                 <span>Click between blocks to add new ones</span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <CheckCircle size={14} className="text-green-500 mt-0.5" />
                                 <span>Hover to see block controls</span>
                             </li>
                             <li className="flex items-start gap-2">
-                                <span className="text-green-500 mt-0.5">✓</span>
+                                <CheckCircle size={14} className="text-green-500 mt-0.5" />
                                 <span>Changes auto-save as you type</span>
                             </li>
                         </ul>
-                    </div>
+                    </Card>
                 </div>
             </div>
 
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-                <button
-                    onClick={() => setShowAIAssistant(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg py-2 font-medium hover:shadow-lg transition-shadow"
-                >
+            <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
+                <Button onClick={() => setShowAIAssistant(true)} className="w-full">
                     Ask AI Assistant
-                </button>
+                </Button>
             </div>
         </div>
     );
 
     const AIAssistant = () => (
-        <div className="fixed right-4 bottom-4 w-96 bg-white rounded-lg shadow-2xl border border-gray-200 z-50">
-            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-purple-600 to-blue-600 text-white flex items-center justify-between">
-                <h3 className="font-semibold flex items-center gap-2">
-                    <Sparkles size={20} />
-                    AI Writing Assistant
-                </h3>
-                <button onClick={() => setShowAIAssistant(false)}>
-                    <X size={20} />
-                </button>
+        <div className="fixed right-4 bottom-4 w-96 bg-white rounded-xl shadow-2xl border border-gray-200 z-50">
+            <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-primary-600 to-blue-600 text-white rounded-t-xl">
+                <div className="flex items-center justify-between">
+                    <h3 className="font-semibold flex items-center gap-2">
+                        <Sparkles size={20} />
+                        AI Writing Assistant
+                    </h3>
+                    <button
+                        onClick={() => setShowAIAssistant(false)}
+                        className="hover:bg-white hover:bg-opacity-20 p-1 rounded transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
             </div>
 
             <div className="p-4">
-                <div className="space-y-3">
-                    <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-sm text-gray-700">How can I help improve your documentation?</p>
-                    </div>
+                <Card className="bg-gray-50 mb-3">
+                    <p className="text-sm text-gray-700">How can I help improve your documentation?</p>
+                </Card>
 
-                    <div className="space-y-2">
-                        <button className="w-full text-left p-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 text-sm">
-                            📊 Generate a comparison table
+                <div className="space-y-2">
+                    {[
+                        { color: 'primary', icon: BarChart, text: 'Generate a comparison table' },
+                        { color: 'blue', icon: RefreshCw, text: 'Create a flowchart' },
+                        { color: 'green', icon: Sparkles, text: 'Improve clarity' },
+                        { color: 'yellow', icon: Edit3, text: 'Add examples' }
+                    ].map((action, idx) => (
+                        <button
+                            key={idx}
+                            className={`w-full text-left p-2 bg-${action.color}-50 text-${action.color}-700 rounded-lg hover:bg-${action.color}-100 text-sm transition-colors flex items-center gap-2`}
+                        >
+                            <action.icon size={16} />
+                            {action.text}
                         </button>
-                        <button className="w-full text-left p-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
-                            🔄 Create a flowchart
-                        </button>
-                        <button className="w-full text-left p-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 text-sm">
-                            ✨ Improve clarity
-                        </button>
-                        <button className="w-full text-left p-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 text-sm">
-                            📝 Add examples
-                        </button>
-                    </div>
+                    ))}
                 </div>
 
-                <div className="mt-4">
-                    <input
-                        type="text"
-                        placeholder="Ask anything..."
-                        className="w-full p-2 border border-gray-300 rounded-lg text-sm"
-                    />
-                </div>
+                <Input
+                    placeholder="Ask anything..."
+                    className="mt-4"
+                />
             </div>
         </div>
     );
 
+    // Impact Analysis View - This needs Modal component
     const ImpactAnalysisView = () => {
         return showImpactAnalysis ? (
             <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
                 <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
                     {/* Header */}
-                    <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-6">
+                    <div className="bg-gradient-to-r from-primary-600 to-blue-600 text-white p-6">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h2 className="text-2xl font-bold mb-2">Impact Analysis</h2>
@@ -890,7 +765,7 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                             </div>
                             <button
                                 onClick={() => setShowImpactAnalysis(false)}
-                                className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg"
+                                className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition-colors"
                             >
                                 <X size={24} />
                             </button>
@@ -899,50 +774,48 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
 
                     {/* Content */}
                     <div className="p-6 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
-                        {/* Summary Cards */}
+                        {/* Summary Cards - These could use StatCard component */}
                         <div className="grid grid-cols-4 gap-4 mb-6">
-                            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <Card className="bg-green-50 border-green-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <CheckCircle className="text-green-600" size={20} />
                                     <span className="font-semibold text-green-900">Passed</span>
                                 </div>
                                 <div className="text-2xl font-bold text-green-600">8</div>
                                 <div className="text-sm text-green-700">Agents unaffected</div>
-                            </div>
+                            </Card>
 
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                            <Card className="bg-yellow-50 border-yellow-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <AlertTriangle className="text-yellow-600" size={20} />
                                     <span className="font-semibold text-yellow-900">Warnings</span>
                                 </div>
                                 <div className="text-2xl font-bold text-yellow-600">3</div>
                                 <div className="text-sm text-yellow-700">Minor issues detected</div>
-                            </div>
+                            </Card>
 
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                            <Card className="bg-red-50 border-red-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <XCircle className="text-red-600" size={20} />
                                     <span className="font-semibold text-red-900">Failed</span>
                                 </div>
                                 <div className="text-2xl font-bold text-red-600">1</div>
                                 <div className="text-sm text-red-700">Critical eval failure</div>
-                            </div>
+                            </Card>
 
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <Card className="bg-blue-50 border-blue-200">
                                 <div className="flex items-center gap-2 mb-2">
                                     <TrendingUp className="text-blue-600" size={20} />
                                     <span className="font-semibold text-blue-900">Risk Score</span>
                                 </div>
                                 <div className="text-2xl font-bold text-blue-600">Medium</div>
                                 <div className="text-sm text-blue-700">Review recommended</div>
-                            </div>
+                            </Card>
                         </div>
 
-                        {/* Affected Agents Table */}
-                        <div className="bg-white border border-gray-200 rounded-lg overflow-hidden mb-6">
-                            <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                                <h3 className="font-semibold text-gray-900">Affected AI Agents</h3>
-                            </div>
+                        {/* Affected Agents Table - Need Table component */}
+                        <Card className="mb-6">
+                            <h3 className="font-semibold text-gray-900 mb-4">Affected AI Agents</h3>
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead className="bg-gray-50 border-b border-gray-200">
@@ -956,73 +829,43 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                                     </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
-                                    <tr>
-                                        <td className="px-4 py-3">
-                                            <div className="font-medium text-gray-900">Customer Support Bot</div>
-                                            <div className="text-sm text-gray-500">v3.2.1</div>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">Sarah Chen</td>
-                                        <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                        ✓ Passed
-                      </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="text-green-600 font-medium">+2.3%</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">0/15</td>
-                                        <td className="px-4 py-3">
-                                            <button className="text-purple-600 hover:text-purple-700 text-sm">View Details</button>
-                                        </td>
-                                    </tr>
-
-                                    <tr>
-                                        <td className="px-4 py-3">
-                                            <div className="font-medium text-gray-900">API Documentation Assistant</div>
-                                            <div className="text-sm text-gray-500">v2.8.0</div>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">Mike Johnson</td>
-                                        <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium">
-                        ⚠ Warning
-                      </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="text-yellow-600 font-medium">-0.8%</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">2/20</td>
-                                        <td className="px-4 py-3">
-                                            <button className="text-purple-600 hover:text-purple-700 text-sm">Review</button>
-                                        </td>
-                                    </tr>
-
-                                    <tr className="bg-red-50">
-                                        <td className="px-4 py-3">
-                                            <div className="font-medium text-gray-900">Code Generation Engine</div>
-                                            <div className="text-sm text-gray-500">v4.1.0</div>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-gray-600">Alex Rivera</td>
-                                        <td className="px-4 py-3">
-                      <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
-                        ✗ Failed
-                      </span>
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className="text-red-600 font-medium">-5.1%</span>
-                                        </td>
-                                        <td className="px-4 py-3 text-sm text-red-600 font-medium">7/25</td>
-                                        <td className="px-4 py-3">
-                                            <button className="text-red-600 hover:text-red-700 text-sm font-medium">Contact Owner</button>
-                                        </td>
-                                    </tr>
+                                    {[
+                                        { name: 'Customer Support Bot', version: 'v3.2.1', owner: 'Sarah Chen', status: 'Passed', accuracy: '+2.3%', failed: '0/15', statusColor: 'success' },
+                                        { name: 'API Documentation Assistant', version: 'v2.8.0', owner: 'Mike Johnson', status: 'Warning', accuracy: '-0.8%', failed: '2/20', statusColor: 'warning' },
+                                        { name: 'Code Generation Engine', version: 'v4.1.0', owner: 'Alex Rivera', status: 'Failed', accuracy: '-5.1%', failed: '7/25', statusColor: 'error', highlight: true }
+                                    ].map((agent, idx) => (
+                                        <tr key={idx} className={agent.highlight ? 'bg-red-50' : ''}>
+                                            <td className="px-4 py-3">
+                                                <div className="font-medium text-gray-900">{agent.name}</div>
+                                                <div className="text-sm text-gray-500">{agent.version}</div>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm text-gray-600">{agent.owner}</td>
+                                            <td className="px-4 py-3">
+                                                <Badge variant={agent.statusColor}>
+                                                    {agent.status}
+                                                </Badge>
+                                            </td>
+                                            <td className="px-4 py-3">
+                                                    <span className={`font-medium ${agent.accuracy.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
+                                                        {agent.accuracy}
+                                                    </span>
+                                            </td>
+                                            <td className="px-4 py-3 text-sm">{agent.failed}</td>
+                                            <td className="px-4 py-3">
+                                                <Button variant="text" size="sm">
+                                                    {agent.status === 'Failed' ? 'Contact Owner' : 'View Details'}
+                                                </Button>
+                                            </td>
+                                        </tr>
+                                    ))}
                                     </tbody>
                                 </table>
                             </div>
-                        </div>
+                        </Card>
 
-                        {/* Detailed Issues and Recommended Actions */}
+                        {/* Issues and Actions */}
                         <div className="grid grid-cols-2 gap-6 mb-6">
-                            <div className="bg-white border border-gray-200 rounded-lg p-4">
+                            <Card>
                                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                     <AlertCircle size={18} className="text-red-600" />
                                     Critical Issues Found
@@ -1043,115 +886,90 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Card>
 
-                            <div className="bg-white border border-gray-200 rounded-lg p-4">
+                            <Card>
                                 <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
                                     <MessageSquare size={18} className="text-blue-600" />
                                     Recommended Actions
                                 </h3>
                                 <div className="space-y-3">
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-xs font-bold text-blue-600">1</span>
+                                    {[
+                                        'Review parameter naming consistency',
+                                        'Contact Alex Rivera about Code Generation Engine',
+                                        'Update deprecated endpoint references'
+                                    ].map((action, idx) => (
+                                        <div key={idx} className="flex items-start gap-3">
+                                            <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <span className="text-xs font-bold text-blue-600">{idx + 1}</span>
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-medium text-gray-900">{action}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">Review parameter naming consistency</p>
-                                            <p className="text-xs text-gray-600 mt-0.5">Ensure backward compatibility or version the API</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-xs font-bold text-blue-600">2</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">Contact Alex Rivera about Code Generation Engine</p>
-                                            <p className="text-xs text-gray-600 mt-0.5">Critical failure requires immediate attention</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-start gap-3">
-                                        <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                            <span className="text-xs font-bold text-blue-600">3</span>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-900">Update deprecated endpoint references</p>
-                                            <p className="text-xs text-gray-600 mt-0.5">Replace /v1/users with /v2/users throughout</p>
-                                        </div>
-                                    </div>
+                                    ))}
                                 </div>
-                            </div>
+                            </Card>
                         </div>
 
-                        {/* Heat Map */}
-                        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+                        {/* Heat Map - Need HeatMapBar component */}
+                        <Card className="mb-6">
                             <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                                <BarChart size={18} className="text-purple-600" />
+                                <BarChart size={18} className="text-primary-600" />
                                 Section Usage Heat Map
                             </h3>
                             <div className="space-y-3">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-32 text-sm text-gray-600">1. Overview</div>
-                                    <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                                        <div className="bg-gradient-to-r from-blue-400 to-blue-600 h-6 rounded-full" style={{ width: '12%' }}>
-                                            <span className="absolute right-2 top-0.5 text-xs text-gray-700">12%</span>
+                                {[
+                                    { section: '1. Overview', percentage: 12, color: 'blue' },
+                                    { section: '2. Authentication', percentage: 92, color: 'red', warning: true },
+                                    { section: '3. Rate Limiting', percentage: 45, color: 'yellow' },
+                                    { section: '4. Endpoints', percentage: 68, color: 'orange' }
+                                ].map((item) => (
+                                    <div key={item.section} className="flex items-center gap-4">
+                                        <div className="w-32 text-sm text-gray-600">{item.section}</div>
+                                        <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
+                                            <div
+                                                className={`bg-gradient-to-r from-${item.color}-400 to-${item.color}-600 h-6 rounded-full flex items-center justify-end pr-2`}
+                                                style={{ width: `${item.percentage}%` }}
+                                            >
+                                                <span className="text-xs text-white font-medium">
+                                                    {item.percentage}% {item.warning && '⚠️'}
+                                                </span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-32 text-sm text-gray-600">2. Authentication</div>
-                                    <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                                        <div className="bg-gradient-to-r from-red-400 to-red-600 h-6 rounded-full" style={{ width: '92%' }}>
-                                            <span className="absolute right-2 top-0.5 text-xs text-white">92% ⚠️</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-32 text-sm text-gray-600">3. Rate Limiting</div>
-                                    <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                                        <div className="bg-gradient-to-r from-yellow-400 to-yellow-600 h-6 rounded-full" style={{ width: '45%' }}>
-                                            <span className="absolute right-2 top-0.5 text-xs text-gray-700">45%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-32 text-sm text-gray-600">4. Endpoints</div>
-                                    <div className="flex-1 bg-gray-200 rounded-full h-6 relative">
-                                        <div className="bg-gradient-to-r from-orange-400 to-orange-600 h-6 rounded-full" style={{ width: '68%' }}>
-                                            <span className="absolute right-2 top-0.5 text-xs text-white">68%</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                ))}
                             </div>
                             <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
                                 <p className="text-sm text-yellow-800">
                                     <strong>⚠️ High Impact Warning:</strong> Section 2 (Authentication) is used by 92% of agent queries. Changes here will have significant impact.
                                 </p>
                             </div>
-                        </div>
+                        </Card>
 
                         {/* Action Buttons */}
                         <div className="flex items-center justify-between pt-4 border-t border-gray-200">
-                            <div className="flex items-center gap-2">
-                                <input type="checkbox" id="notify" className="rounded text-purple-600" />
-                                <label htmlFor="notify" className="text-sm text-gray-700">
-                                    Notify all affected agent owners
-                                </label>
-                            </div>
+                            <Checkbox
+                                label="Notify all affected agent owners"
+                            />
 
                             <div className="flex gap-3">
-                                <button
+                                <Button
+                                    variant="secondary"
                                     onClick={() => setShowImpactAnalysis(false)}
-                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
                                 >
                                     Cancel
-                                </button>
-                                <button className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600">
+                                </Button>
+                                <Button
+                                    variant="secondary"
+                                    className="bg-yellow-500 text-white hover:bg-yellow-600"
+                                >
                                     Save & Schedule Review
-                                </button>
-                                <button className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center gap-2">
-                                    <Send size={18} />
+                                </Button>
+                                <Button>
+                                    <Send size={18} className="mr-2" />
                                     Publish Anyway
-                                </button>
+                                </Button>
                             </div>
                         </div>
                     </div>
@@ -1161,7 +979,7 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <AppLayout activeTab={activeTab} onTabChange={onTabChange}>
             {!selectedDocument ? (
                 <DocumentList />
             ) : (
@@ -1172,7 +990,7 @@ const KnowledgeUpdateWorkflow = ({ onBack }) => {
                     {showImpactAnalysis && <ImpactAnalysisView />}
                 </>
             )}
-        </div>
+        </AppLayout>
     );
 };
 

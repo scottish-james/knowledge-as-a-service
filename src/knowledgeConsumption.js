@@ -1,13 +1,24 @@
 import React, { useState } from 'react';
-import { Search, FileText, Database, Key, Copy, Code, ExternalLink, TrendingUp, Shield, AlertTriangle, ArrowLeft } from 'lucide-react';
+import AppLayout from './components/layouts/AppLayout';
+import { Card, Button, Badge } from './components/common';
+import { Input, Checkbox } from './components/common/FormElements';
+// New components we'll need:
+// import { CodeBlock, TabGroup, CopyButton, Alert.jsx, MetricCard } from './components/common';
 
-const KnowledgeConsumption = ({ onBack }) => {
+import {
+  Search, FileText, Database, Key, Copy, Code,
+  TrendingUp, Shield, AlertTriangle, Check,
+  Zap, AlertCircle
+} from 'lucide-react';
+
+const KnowledgeConsumption = ({ activeTab, onTabChange }) => {
   const [selectedDocuments, setSelectedDocuments] = useState(new Map());
   const [totalChunks, setTotalChunks] = useState(0);
   const [showVectorSummary, setShowVectorSummary] = useState(false);
   const [showProcessingBanner, setShowProcessingBanner] = useState(false);
   const [showApiCredentials, setShowApiCredentials] = useState(false);
   const [activeCodeExample, setActiveCodeExample] = useState('python');
+  const [searchQuery, setSearchQuery] = useState('machine learning best practices');
 
   const documents = [
     {
@@ -91,7 +102,6 @@ const KnowledgeConsumption = ({ onBack }) => {
 
   const generateAPIKey = () => {
     setShowProcessingBanner(true);
-
     setTimeout(() => {
       setShowProcessingBanner(false);
       setShowApiCredentials(true);
@@ -109,49 +119,49 @@ const KnowledgeConsumption = ({ onBack }) => {
 
 # Initialize client with your API credentials
 client = KnowledgeClient(
-api_key="sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890",
-request_id="REQ-2025-0807-3F7K9M2P"
+    api_key="sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890",
+    request_id="REQ-2025-0807-3F7K9M2P"
 )
 
 # Perform a vector search on your selected documents
 response = client.vector.search(
-query="How to implement model versioning in production?",
-top_k=5,
-include_metadata=True,
-track_usage=True  # Enable chunk tracking for impact analysis
+    query="How to implement model versioning in production?",
+    top_k=5,
+    include_metadata=True,
+    track_usage=True  # Enable chunk tracking for impact analysis
 )
 
 # Access the results
 for result in response.results:
-print(f"Score: {result.score}")
-print(f"Content: {result.content}")
-print(f"Document: {result.metadata.document_id}")
-print(f"Section: {result.metadata.section}")
-print(f"Usage tracked: {result.usage.chunk_tracked}")`,
+    print(f"Score: {result.score}")
+    print(f"Content: {result.content}")
+    print(f"Document: {result.metadata.document_id}")
+    print(f"Section: {result.metadata.section}")
+    print(f"Usage tracked: {result.usage.chunk_tracked}")`,
 
     javascript: `import { KnowledgeClient } from '@knowledge-platform/client';
 
 // Initialize client with your API credentials
 const client = new KnowledgeClient({
-apiKey: 'sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890',
-requestId: 'REQ-2025-0807-3F7K9M2P'
+    apiKey: 'sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890',
+    requestId: 'REQ-2025-0807-3F7K9M2P'
 });
 
 // Perform a vector search on your selected documents
 const response = await client.vector.search({
-query: 'How to implement model versioning in production?',
-topK: 5,
-includeMetadata: true,
-trackUsage: true  // Enable chunk tracking for impact analysis
+    query: 'How to implement model versioning in production?',
+    topK: 5,
+    includeMetadata: true,
+    trackUsage: true  // Enable chunk tracking for impact analysis
 });
 
 // Access the results
 response.results.forEach(result => {
-console.log('Score:', result.score);
-console.log('Content:', result.content);
-console.log('Document:', result.metadata.documentId);
-console.log('Section:', result.metadata.section);
-console.log('Usage tracked:', result.usage.chunkTracked);
+    console.log('Score:', result.score);
+    console.log('Content:', result.content);
+    console.log('Document:', result.metadata.documentId);
+    console.log('Section:', result.metadata.section);
+    console.log('Usage tracked:', result.usage.chunkTracked);
 });`,
 
     curl: `curl -X POST https://api.knowledge-platform.com/v1/vector/search \\
@@ -159,317 +169,14 @@ console.log('Usage tracked:', result.usage.chunkTracked);
 -H "X-Request-ID: REQ-2025-0807-3F7K9M2P" \\
 -H "Content-Type: application/json" \\
 -d '{
-"query": "How to implement model versioning in production?",
-"top_k": 5,
-"include_metadata": true,
-"track_usage": true
-}'
-
-# Response includes usage tracking data:
-# {
-#   "results": [...],
-#   "usage": {
-#     "chunks_retrieved": 5,
-#     "tokens_processed": 1280,
-#     "request_id": "REQ-2025-0807-3F7K9M2P",
-#     "timestamp": "2025-08-07T10:30:45Z"
-#   }
-# }`
+    "query": "How to implement model versioning in production?",
+    "top_k": 5,
+    "include_metadata": true,
+    "track_usage": true
+}'`
   };
 
-  return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-5">
-        <div className="max-w-7xl mx-auto">
-          {/* Header with Back Button */}
-          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
-            <div className="flex items-center gap-4 mb-4">
-              <button
-                  onClick={onBack}
-                  className="flex items-center gap-2 px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg transition-colors"
-              >
-                <ArrowLeft size={16}/>
-                Back to Governance
-              </button>
-            </div>
-            <h1 className="text-3xl font-bold text-gray-800 mb-2">Knowledge Discovery & Integration</h1>
-            <p className="text-gray-600">Search, select, and connect documents to your AI solution with pre-computed vector embeddings</p>
-          </div>
-
-          {/* Search Section */}
-          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
-            <div className="flex gap-3 mb-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
-                <input
-                    type="text"
-                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
-                    placeholder="Search for knowledge documents..."
-                    defaultValue="machine learning best practices"
-                />
-              </div>
-              <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
-                Search
-              </button>
-            </div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-sm font-semibold">
-              ⚡ AI-Powered Semantic Search
-            </div>
-          </div>
-
-          {/* Results Section */}
-          <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
-            <div className="flex justify-between items-center mb-5 pb-4 border-b-2 border-gray-200">
-              <span className="text-gray-700 font-medium">Found {documents.length} documents</span>
-              <button
-                  onClick={toggleSelectAll}
-                  className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition-colors"
-              >
-                {selectedDocuments.size === documents.length ? 'Deselect All' : 'Select All'}
-              </button>
-            </div>
-
-            {/* Document Cards */}
-            {documents.map((doc) => (
-                <div
-                    key={doc.id}
-                    className={`bg-white border-2 rounded-xl p-5 mb-4 transition-all duration-300 hover:shadow-md ${
-                        selectedDocuments.has(doc.id)
-                            ? 'border-purple-500 bg-gradient-to-r from-purple-50/50 to-indigo-50/50'
-                            : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                >
-                  <div className="flex items-start gap-4 mb-4">
-                    <input
-                        type="checkbox"
-                        className="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer"
-                        checked={selectedDocuments.has(doc.id)}
-                        onChange={(e) => updateSelection(doc.id, doc.chunks, e.target.checked)}
-                    />
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-800">{doc.title}</h3>
-                        <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg text-xs text-gray-600">
-                      📄 {doc.chunks} chunks
-                    </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-gray-50 rounded-lg p-3 mb-4">
-                    <p className="text-gray-700 text-sm leading-relaxed">{doc.summary}</p>
-                  </div>
-
-                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(doc.metadata).map(([key, value]) => (
-                        <div key={key}>
-                          <div className="text-xs uppercase text-gray-500 font-semibold mb-1">
-                            {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                          </div>
-                          <div className={`text-sm font-medium ${key === 'status' ? 'text-green-600' : 'text-gray-800'}`}>
-                            {key === 'status' ? '✓ ' : ''}{value}
-                          </div>
-                        </div>
-                    ))}
-                  </div>
-                </div>
-            ))}
-          </div>
-
-          {/* Vector Database Summary */}
-          {showVectorSummary && (
-              <div className="bg-gradient-to-r from-purple-100/80 to-indigo-100/80 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-purple-200/50">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <Database size={20} />
-                  📊 Vector Database Configuration
-                </h3>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-purple-600">{totalChunks.toLocaleString()}</div>
-                    <div className="text-sm text-gray-600">Total Chunks</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-purple-600">{(totalChunks * 256).toLocaleString()}</div>
-                    <div className="text-sm text-gray-600">Est. Tokens</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-purple-600">1536</div>
-                    <div className="text-sm text-gray-600">Vector Dimensions</div>
-                  </div>
-                  <div className="bg-white rounded-lg p-3 text-center">
-                    <div className="text-2xl font-bold text-purple-600">{(totalChunks * 0.05).toFixed(1)} MB</div>
-                    <div className="text-sm text-gray-600">Index Size</div>
-                  </div>
-                </div>
-              </div>
-          )}
-
-          {/* API Configuration Section */}
-          <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
-            <div className="mb-5">
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">API Integration Configuration</h2>
-              <p className="text-gray-600 text-sm">Generate secure API credentials with metadata-filtered access to pre-computed vector embeddings</p>
-            </div>
-
-            <div className="inline-block px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-sm font-semibold mb-5">
-              {selectedDocuments.size} document{selectedDocuments.size !== 1 ? 's' : ''} selected
-            </div>
-
-            {showProcessingBanner && (
-                <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white p-3 rounded-lg mb-4">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span className="font-medium">Configuring vector database access filters...</span>
-                </div>
-            )}
-
-            <button
-                onClick={generateAPIKey}
-                disabled={selectedDocuments.size === 0}
-                className="w-full p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold text-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none mb-5"
-            >
-              Generate API Key & Configure Access
-            </button>
-
-            {showApiCredentials && (
-                <div className="bg-gray-900 rounded-xl p-6 text-green-400">
-                  <div className="space-y-5">
-                    <div>
-                      <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Request ID</div>
-                      <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                        <code className="text-sm">REQ-2025-0807-3F7K9M2P</code>
-                        <button
-                            onClick={() => copyToClipboard('REQ-2025-0807-3F7K9M2P')}
-                            className="p-1 text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Copy size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">API Key (HMAC-SHA256 Signed)</div>
-                      <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                        <code className="text-sm break-all">sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890</code>
-                        <button
-                            onClick={() => copyToClipboard('sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890')}
-                            className="p-1 text-gray-400 hover:text-white transition-colors ml-2"
-                        >
-                          <Copy size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Vector Search Endpoint</div>
-                      <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
-                        <code className="text-sm">https://api.knowledge-platform.com/v1/vector/search</code>
-                        <button
-                            onClick={() => copyToClipboard('https://api.knowledge-platform.com/v1/vector/search')}
-                            className="p-1 text-gray-400 hover:text-white transition-colors"
-                        >
-                          <Copy size={16} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Technical Configuration */}
-                    <div className="bg-gray-800 bg-opacity-50 rounded-lg p-4 mt-6 border border-gray-700">
-                      <h4 className="text-xs uppercase text-gray-400 mb-3 font-semibold">Technical Configuration</h4>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Access Method</span>
-                          <span className="text-sm text-gray-300">Metadata Filtering</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Query Type</span>
-                          <span className="text-sm text-gray-300">Real-time Embedding</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Chunk Strategy</span>
-                          <span className="text-sm text-gray-300">Section-based</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Rate Limit</span>
-                          <span className="text-sm text-gray-300">1000 req/min</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Filter Keys</span>
-                          <span className="text-sm text-gray-300">[{Array.from(selectedDocuments.keys()).join(', ')}]</span>
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="text-xs text-gray-500">Vector DB</span>
-                          <span className="text-sm text-gray-300">Central Index</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Usage Tracking & Change Impact Analysis */}
-                    <div className="bg-green-900 bg-opacity-30 border border-green-700 rounded-lg p-4 mt-4">
-                      <h4 className="text-green-300 font-semibold mb-2 flex items-center gap-2">
-                        <TrendingUp size={16} />
-                        📊 Usage Tracking & Change Impact Analysis
-                      </h4>
-                      <p className="text-green-200 text-sm leading-relaxed">
-                        All chunk retrievals are tracked by Request ID. When documents are updated, we'll analyse which chunks your AI agent uses most frequently and notify you of potential impacts. This helps you assess risk before accepting document updates.
-                      </p>
-                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div className="flex items-start gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full mt-1.5"></div>
-                          <div className="text-xs text-green-300">
-                            <span className="font-medium">Chunk Frequency Analysis:</span> Track which document sections your AI uses most
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full mt-1.5"></div>
-                          <div className="text-xs text-green-300">
-                            <span className="font-medium">Impact Notifications:</span> Get alerts before document updates affect your AI
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full mt-1.5"></div>
-                          <div className="text-xs text-green-300">
-                            <span className="font-medium">Risk Assessment:</span> Understand potential disruption to your AI workflows
-                          </div>
-                        </div>
-                        <div className="flex items-start gap-2">
-                          <div className="w-2 h-2 bg-green-400 rounded-full mt-1.5"></div>
-                          <div className="text-xs text-green-300">
-                            <span className="font-medium">Usage Analytics:</span> View detailed reports on knowledge consumption patterns
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Code Examples */}
-                    <div className="mt-6">
-                      <h4 className="text-xs uppercase text-gray-400 mb-3 font-semibold">Integration Examples</h4>
-
-                      <div className="flex gap-2 mb-4">
-                        {Object.keys(codeExamples).map((lang) => (
-                            <button
-                                key={lang}
-                                onClick={() => setActiveCodeExample(lang)}
-                                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                    activeCodeExample === lang
-                                        ? 'bg-gray-700 text-white'
-                                        : 'bg-gray-800 text-gray-400 hover:text-white'
-                                }`}
-                            >
-                              {lang.charAt(0).toUpperCase() + lang.slice(1)}
-                            </button>
-                        ))}
-                      </div>
-
-                      <div className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-green-400 text-sm">
-                      <code>{codeExamples[activeCodeExample]}</code>
-                    </pre>
-                      </div>
-
-                      {/* API Response Format */}
-                      <div className="mt-4 bg-gray-800 bg-opacity-50 border border-gray-700 rounded-lg p-4">
-                        <h5 className="text-xs uppercase text-gray-400 mb-2 font-semibold">Response Format with Usage Tracking</h5>
-                        <pre className="text-gray-300 text-xs overflow-x-auto">
-            <code>{`{
+  const apiResponseExample = `{
   "results": [
     {
       "chunk_id": "DOC-2024-ML-001_chunk_47",
@@ -491,44 +198,319 @@ console.log('Usage tracked:', result.usage.chunkTracked);
     "request_id": "REQ-2025-0807-3F7K9M2P",
     "timestamp": "2025-08-07T10:30:45Z",
     "tracking_enabled": true
-  },
-  "impact_analysis": {
-    "chunks_tracked": 5,
-    "new_chunk_usage": true,
-    "frequency_updated": true
   }
-}`}</code>
-          </pre>
+}`;
+
+  return (
+      <AppLayout activeTab={activeTab} onTabChange={onTabChange}>
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Knowledge Discovery & Integration</h1>
+            <p className="text-gray-600">Search, select, and connect documents to your AI solution with pre-computed vector embeddings</p>
+          </div>
+
+          {/* Search Section */}
+          <Card className="mb-6">
+            <div className="flex gap-3 mb-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                    type="text"
+                    className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg text-base focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-200 transition-all"
+                    placeholder="Search for knowledge documents..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
+              <Button>
+                <Search size={16} className="mr-2" />
+                Search
+              </Button>
+            </div>
+            <Badge variant="info" icon={Zap}>
+              AI-Powered Semantic Search
+            </Badge>
+          </Card>
+
+          {/* Results Section */}
+          <Card className="mb-6">
+            <div className="flex justify-between items-center mb-5 pb-4 border-b border-gray-200">
+              <span className="text-gray-700 font-medium">Found {documents.length} documents</span>
+              <Button
+                  variant="secondary"
+                  onClick={toggleSelectAll}
+                  size="sm"
+              >
+                {selectedDocuments.size === documents.length ? 'Deselect All' : 'Select All'}
+              </Button>
+            </div>
+
+            {/* Document Cards */}
+            <div className="space-y-4">
+              {documents.map((doc) => (
+                  <div
+                      key={doc.id}
+                      className={`border-2 rounded-lg p-5 transition-all duration-300 ${
+                          selectedDocuments.has(doc.id)
+                              ? 'border-primary-500 bg-primary-50'
+                              : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                  >
+                    <div className="flex items-start gap-4 mb-4">
+                      <Checkbox
+                          checked={selectedDocuments.has(doc.id)}
+                          onChange={(e) => updateSelection(doc.id, doc.chunks, e.target.checked)}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900">{doc.title}</h3>
+                          <Badge variant="neutral">
+                            <FileText size={12} className="mr-1" />
+                            {doc.chunks} chunks
+                          </Badge>
+                        </div>
+                        <p className="text-gray-700 text-sm leading-relaxed mb-4">{doc.summary}</p>
+
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+                          {Object.entries(doc.metadata).map(([key, value]) => (
+                              <div key={key}>
+                                <div className="text-xs uppercase text-gray-500 font-semibold mb-1">
+                                  {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                                </div>
+                                <div className={`text-sm font-medium ${key === 'status' ? 'text-green-600' : 'text-gray-800'}`}>
+                                  {key === 'status' && <Check size={12} className="inline mr-1" />}
+                                  {value}
+                                </div>
+                              </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
+                  </div>
+              ))}
+            </div>
+          </Card>
 
-                    {/* Security Notice */}
-                    <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mt-4">
-                      <h4 className="text-red-300 font-semibold mb-2 flex items-center gap-2">
-                        <Shield size={16} />
-                        ⚠️ Security Notice
-                      </h4>
-                      <p className="text-red-200 text-sm">
-                        This API key is cryptographically bound to the selected documents and cannot be modified.
-                        The key includes an HMAC signature that validates the document selection server-side.
-                        To add or remove documents, you must generate a new key and revoke this one.
-                      </p>
+          {/* Vector Database Summary - Need MetricCard component */}
+          {showVectorSummary && (
+              <Card className="mb-6 bg-primary-50 border-primary-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Database size={20} className="text-primary-600" />
+                  Vector Database Configuration
+                </h3>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Total Chunks', value: totalChunks.toLocaleString() },
+                    { label: 'Est. Tokens', value: (totalChunks * 256).toLocaleString() },
+                    { label: 'Vector Dimensions', value: '1536' },
+                    { label: 'Index Size', value: `${(totalChunks * 0.05).toFixed(1)} MB` }
+                  ].map((metric) => (
+                      <div key={metric.label} className="bg-white rounded-lg p-3 text-center">
+                        <div className="text-2xl font-bold text-primary-600">{metric.value}</div>
+                        <div className="text-sm text-gray-600">{metric.label}</div>
+                      </div>
+                  ))}
+                </div>
+              </Card>
+          )}
+
+          {/* API Configuration Section */}
+          <Card>
+            <div className="mb-5">
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">API Integration Configuration</h2>
+              <p className="text-gray-600 text-sm">Generate secure API credentials with metadata-filtered access to pre-computed vector embeddings</p>
+            </div>
+
+            <Badge variant="info" className="mb-5">
+              {selectedDocuments.size} document{selectedDocuments.size !== 1 ? 's' : ''} selected
+            </Badge>
+
+            {/* Processing Banner - Need Alert.jsx component */}
+            {showProcessingBanner && (
+                <div className="flex items-center gap-3 bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg mb-4">
+                  <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                  <span className="font-medium">Configuring vector database access filters...</span>
+                </div>
+            )}
+
+            <Button
+                onClick={generateAPIKey}
+                disabled={selectedDocuments.size === 0}
+                className="w-full mb-5"
+                size="lg"
+            >
+              <Key size={20} className="mr-2" />
+              Generate API Key & Configure Access
+            </Button>
+
+            {showApiCredentials && (
+                <div className="space-y-5">
+                  {/* API Credentials - Need CodeBlock component with copy functionality */}
+                  <Card className="bg-gray-900 text-green-400">
+                    <div className="space-y-5">
+                      {/* Request ID */}
+                      <div>
+                        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Request ID</div>
+                        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                          <code className="text-sm text-green-400">REQ-2025-0807-3F7K9M2P</code>
+                          <Button
+                              variant="text"
+                              size="sm"
+                              onClick={() => copyToClipboard('REQ-2025-0807-3F7K9M2P')}
+                              className="text-gray-400 hover:text-white"
+                          >
+                            <Copy size={16} />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* API Key */}
+                      <div>
+                        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">API Key (HMAC-SHA256 Signed)</div>
+                        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                          <code className="text-sm text-green-400 break-all">sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890</code>
+                          <Button
+                              variant="text"
+                              size="sm"
+                              onClick={() => copyToClipboard('sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890')}
+                              className="text-gray-400 hover:text-white ml-2"
+                          >
+                            <Copy size={16} />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Endpoint */}
+                      <div>
+                        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Vector Search Endpoint</div>
+                        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+                          <code className="text-sm text-green-400">https://api.knowledge-platform.com/v1/vector/search</code>
+                          <Button
+                              variant="text"
+                              size="sm"
+                              onClick={() => copyToClipboard('https://api.knowledge-platform.com/v1/vector/search')}
+                              className="text-gray-400 hover:text-white"
+                          >
+                            <Copy size={16} />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Technical Configuration */}
+                  <Card className="bg-gray-50">
+                    <h4 className="font-semibold text-gray-900 mb-3">Technical Configuration</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {[
+                        { label: 'Access Method', value: 'Metadata Filtering' },
+                        { label: 'Query Type', value: 'Real-time Embedding' },
+                        { label: 'Chunk Strategy', value: 'Section-based' },
+                        { label: 'Rate Limit', value: '1000 req/min' },
+                        { label: 'Vector DB', value: 'Central Index' },
+                        { label: 'Filter Keys', value: `${selectedDocuments.size} documents` }
+                      ].map((config) => (
+                          <div key={config.label}>
+                            <div className="text-xs text-gray-500 mb-1">{config.label}</div>
+                            <div className="text-sm font-medium text-gray-900">{config.value}</div>
+                          </div>
+                      ))}
+                    </div>
+                  </Card>
+
+                  {/* Usage Tracking Alert.jsx - Need Alert.jsx component */}
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                    <h4 className="text-green-900 font-semibold mb-2 flex items-center gap-2">
+                      <TrendingUp size={16} className="text-green-600" />
+                      Usage Tracking & Change Impact Analysis
+                    </h4>
+                    <p className="text-green-800 text-sm leading-relaxed mb-3">
+                      All chunk retrievals are tracked by Request ID. When documents are updated, we'll analyse which chunks your AI agent uses most frequently and notify you of potential impacts.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {[
+                        { title: 'Chunk Frequency Analysis', desc: 'Track which document sections your AI uses most' },
+                        { title: 'Impact Notifications', desc: 'Get alerts before document updates affect your AI' },
+                        { title: 'Risk Assessment', desc: 'Understand potential disruption to your AI workflows' },
+                        { title: 'Usage Analytics', desc: 'View detailed reports on knowledge consumption patterns' }
+                      ].map((feature) => (
+                          <div key={feature.title} className="flex items-start gap-2">
+                            <div className="w-2 h-2 bg-green-500 rounded-full mt-1.5 flex-shrink-0"></div>
+                            <div className="text-xs text-green-800">
+                              <span className="font-medium">{feature.title}:</span> {feature.desc}
+                            </div>
+                          </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Code Examples - Need TabGroup and CodeBlock components */}
+                  <Card>
+                    <h4 className="font-semibold text-gray-900 mb-3">Integration Examples</h4>
+
+                    {/* Tab buttons */}
+                    <div className="flex gap-2 mb-4 border-b border-gray-200">
+                      {Object.keys(codeExamples).map((lang) => (
+                          <button
+                              key={lang}
+                              onClick={() => setActiveCodeExample(lang)}
+                              className={`px-4 py-2 font-medium capitalize transition-colors border-b-2 -mb-px ${
+                                  activeCodeExample === lang
+                                      ? 'text-primary-600 border-primary-600'
+                                      : 'text-gray-600 hover:text-gray-900 border-transparent'
+                              }`}
+                          >
+                            {lang}
+                          </button>
+                      ))}
                     </div>
 
-                    <div className="flex gap-3 mt-4">
-                      <button className="flex-1 p-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors">
-                        Update Document Selection
-                      </button>
-                      <button className="flex-1 p-3 border border-red-600 text-red-400 rounded-lg hover:bg-red-900/20 transition-colors">
-                        Revoke This Key
-                      </button>
+                    {/* Code display */}
+                    <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                  <pre className="text-green-400 text-sm">
+                    <code>{codeExamples[activeCodeExample]}</code>
+                  </pre>
                     </div>
+
+                    {/* API Response Format */}
+                    <div className="mt-4">
+                      <h5 className="text-sm font-semibold text-gray-900 mb-2">Response Format with Usage Tracking</h5>
+                      <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
+                    <pre className="text-gray-300 text-xs">
+                      <code>{apiResponseExample}</code>
+                    </pre>
+                      </div>
+                    </div>
+                  </Card>
+
+                  {/* Security Notice - Need Alert.jsx component */}
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <h4 className="text-red-900 font-semibold mb-2 flex items-center gap-2">
+                      <Shield size={16} className="text-red-600" />
+                      Security Notice
+                    </h4>
+                    <p className="text-red-800 text-sm">
+                      This API key is cryptographically bound to the selected documents and cannot be modified.
+                      The key includes an HMAC signature that validates the document selection server-side.
+                      To add or remove documents, you must generate a new key and revoke this one.
+                    </p>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-3">
+                    <Button variant="secondary" className="flex-1">
+                      Update Document Selection
+                    </Button>
+                    <Button variant="secondary" className="flex-1 text-red-600 border-red-600 hover:bg-red-50">
+                      Revoke This Key
+                    </Button>
                   </div>
                 </div>
             )}
-          </div>
+          </Card>
         </div>
-      </div>
+      </AppLayout>
   );
 };
 
