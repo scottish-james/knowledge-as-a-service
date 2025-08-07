@@ -1,1138 +1,406 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Knowledge Platform - Document Discovery & API Integration</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      padding: 20px;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    /* Header */
-    .header {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 24px 32px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-      backdrop-filter: blur(10px);
-    }
-
-    .header h1 {
-      color: #2d3748;
-      font-size: 28px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-
-    .header p {
-      color: #718096;
-      font-size: 14px;
-    }
-
-    /* Search Section */
-    .search-section {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-
-    .search-bar {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-
-    .search-input {
-      flex: 1;
-      padding: 14px 20px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      font-size: 15px;
-      transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-      outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .search-btn {
-      padding: 14px 32px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .search-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    .ai-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    /* Results Section */
-    .results-section {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 24px;
-      margin-bottom: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-
-    .results-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 2px solid #e2e8f0;
-    }
-
-    .result-count {
-      color: #4a5568;
-      font-size: 14px;
-    }
-
-    .select-all-btn {
-      padding: 8px 16px;
-      background: #f7fafc;
-      border: 1px solid #cbd5e0;
-      border-radius: 8px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-    }
-
-    .select-all-btn:hover {
-      background: #edf2f7;
-    }
-
-    /* Document Cards */
-    .document-card {
-      background: white;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 16px;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-
-    .document-card:hover {
-      border-color: #cbd5e0;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    }
-
-    .document-card.selected {
-      border-color: #667eea;
-      background: linear-gradient(to right, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
-    }
-
-    .document-header {
-      display: flex;
-      align-items: start;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-
-    .document-checkbox {
-      width: 20px;
-      height: 20px;
-      margin-top: 2px;
-      cursor: pointer;
-      accent-color: #667eea;
-    }
-
-    .document-title-wrapper {
-      flex: 1;
-    }
-
-    .document-title-line {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .document-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #2d3748;
-    }
-
-    .chunk-info {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      background: #f7fafc;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #4a5568;
-    }
-
-    .document-summary {
-      color: #4a5568;
-      line-height: 1.6;
-      margin-bottom: 16px;
-      padding: 12px;
-      background: #f7fafc;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    .metadata-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 12px;
-    }
-
-    .metadata-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .metadata-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #a0aec0;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-
-    .metadata-value {
-      font-size: 14px;
-      color: #2d3748;
-      font-weight: 500;
-    }
-
-    .status-ready {
-      color: #48bb78;
-    }
-
-    /* Vector Database Summary */
-    .vector-summary {
-      background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      display: none;
-    }
-
-    .vector-summary.show {
-      display: block;
-      animation: slideIn 0.4s ease;
-    }
-
-    .vector-summary h3 {
-      color: #2d3748;
-      font-size: 16px;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .vector-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 16px;
-    }
-
-    .vector-stat {
-      background: white;
-      padding: 12px;
-      border-radius: 8px;
-      text-align: center;
-    }
-
-    .vector-stat-value {
-      font-size: 24px;
-      font-weight: 700;
-      color: #667eea;
-      display: block;
-    }
-
-    .vector-stat-label {
-      font-size: 12px;
-      color: #718096;
-      margin-top: 4px;
-    }
-
-    /* API Configuration Section */
-    .api-section {
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-    }
-
-    .api-header {
-      margin-bottom: 20px;
-    }
-
-    .api-header h2 {
-      color: #2d3748;
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-
-    .selected-docs-count {
-      padding: 8px 16px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
-      border-radius: 20px;
-      display: inline-block;
-      font-size: 14px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
-
-    .processing-banner {
-      background: linear-gradient(135deg, #fbbf24, #f59e0b);
-      color: white;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      display: none;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .processing-banner.show {
-      display: flex;
-    }
-
-    .processing-text {
-      flex: 1;
-      font-size: 14px;
-      font-weight: 500;
-    }
-
-    .generate-api-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #48bb78, #38a169);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-      margin-bottom: 20px;
-    }
-
-    .generate-api-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(72, 187, 120, 0.4);
-    }
-
-    .generate-api-btn:disabled {
-      background: #cbd5e0;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    /* API Credentials Display */
-    .api-credentials {
-      background: #1a202c;
-      border-radius: 12px;
-      padding: 24px;
-      color: #e2e8f0;
-      display: none;
-    }
-
-    .api-credentials.show {
-      display: block;
-      animation: slideIn 0.4s ease;
-    }
-
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .credential-item {
-      margin-bottom: 20px;
-    }
-
-    .credential-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      color: #a0aec0;
-      margin-bottom: 8px;
-      font-weight: 600;
-    }
-
-    .credential-value {
-      background: #2d3748;
-      padding: 12px;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-size: 14px;
-      word-break: break-all;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .copy-btn {
-      padding: 6px 12px;
-      background: #4a5568;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.2s ease;
-      white-space: nowrap;
-      margin-left: 12px;
-    }
-
-    .copy-btn:hover {
-      background: #718096;
-    }
-
-    /* Technical Details */
-    .technical-details {
-      background: rgba(45, 55, 72, 0.5);
-      border: 1px solid #4a5568;
-      border-radius: 8px;
-      padding: 16px;
-      margin: 20px 0;
-    }
-
-    .technical-details h4 {
-      color: #a0aec0;
-      font-size: 13px;
-      text-transform: uppercase;
-      margin-bottom: 12px;
-      letter-spacing: 0.5px;
-    }
-
-    .tech-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-    }
-
-    .tech-item {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .tech-label {
-      font-size: 11px;
-      color: #718096;
-    }
-
-    .tech-value {
-      font-size: 13px;
-      color: #e2e8f0;
-      font-family: 'Courier New', monospace;
-    }
-
-    .security-notice {
-      background: rgba(237, 100, 166, 0.1);
-      border: 1px solid #ed64a6;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 16px;
-    }
-
-    .security-notice h4 {
-      color: #ed64a6;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .security-notice p {
-      color: #fbb6ce;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .usage-tracking {
-      background: rgba(72, 187, 120, 0.1);
-      border: 1px solid #48bb78;
-      border-radius: 8px;
-      padding: 12px;
-      margin-top: 16px;
-    }
-
-    .usage-tracking h4 {
-      color: #48bb78;
-      font-size: 14px;
-      margin-bottom: 8px;
-    }
-
-    .usage-tracking p {
-      color: #9ae6b4;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .api-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .action-btn {
-      flex: 1;
-      padding: 12px;
-      border: 1px solid #4a5568;
-      background: transparent;
-      color: #e2e8f0;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s ease;
-    }
-
-    .action-btn:hover {
-      background: #4a5568;
-    }
-
-    .action-btn.danger {
-      border-color: #fc8181;
-      color: #fc8181;
-    }
-
-    .action-btn.danger:hover {
-      background: #fc8181;
-      color: #1a202c;
-    }
-
-    /* Loading State */
-    .loading {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 3px solid #e2e8f0;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-  </style>
-</head>
-<body>
-<div class="container">
-  <!-- Header -->
-  <div class="header">
-    <h1>Knowledge Discovery & Integration</h1>
-    <p>Search, select, and connect documents to your AI solution with pre-computed vector embeddings</p>
-  </div>
-
-  <!-- Search Section -->
-  <div class="search-section">
-    <div class="search-bar">
-      <input type="text" class="search-input" placeholder="Search for knowledge documents..." value="machine learning best practices">
-      <button class="search-btn" onclick="performSearch()">
-        Search
-      </button>
+import React, { useState } from 'react';
+import { Search, FileText, Database, Key, Copy, Code, ExternalLink } from 'lucide-react';
+
+const KnowledgeConsumption = () => {
+const [selectedDocuments, setSelectedDocuments] = useState(new Map());
+const [totalChunks, setTotalChunks] = useState(0);
+const [showVectorSummary, setShowVectorSummary] = useState(false);
+const [showProcessingBanner, setShowProcessingBanner] = useState(false);
+const [showApiCredentials, setShowApiCredentials] = useState(false);
+const [activeCodeExample, setActiveCodeExample] = useState('python');
+
+const documents = [
+{
+id: 'DOC-2024-ML-001',
+title: 'Machine Learning Best Practices Guide v2.3',
+chunks: 127,
+summary: 'This comprehensive guide covers essential machine learning practices including data preprocessing, model selection, hyperparameter tuning, and deployment strategies. Updated with latest industry standards and real-world case studies from production environments.',
+metadata: {
+teamOwner: 'Data Science Team',
+primaryOwner: 'Dr Sarah Mitchell',
+updateFrequency: 'Quarterly',
+nextUpdate: '15 Mar 2025',
+chunkingMethod: 'Section-based',
+status: 'Ready'
+}
+},
+{
+id: 'DOC-2024-AI-ETHICS-007',
+title: 'AI Ethics and Responsible ML Framework',
+chunks: 89,
+summary: 'Framework for implementing ethical AI practices, including bias detection, fairness metrics, transparency requirements, and governance structures. Includes templates and checklists for responsible AI development.',
+metadata: {
+teamOwner: 'AI Governance Board',
+primaryOwner: 'James Chen',
+updateFrequency: 'Bi-annual',
+nextUpdate: '01 Jun 2025',
+chunkingMethod: 'Section-based',
+status: 'Ready'
+}
+},
+{
+id: 'DOC-2024-DEPLOY-012',
+title: 'ML Model Deployment & Monitoring Playbook',
+chunks: 156,
+summary: 'Complete guide for deploying machine learning models to production, including containerisation, API design, monitoring strategies, and incident response procedures. Features real-time performance tracking guidelines.',
+metadata: {
+teamOwner: 'Platform Engineering',
+primaryOwner: 'Alexandra Torres',
+updateFrequency: 'Monthly',
+nextUpdate: '01 Feb 2025',
+chunkingMethod: 'Section-based',
+status: 'Ready'
+}
+}
+];
+
+const updateSelection = (docId, chunks, isSelected) => {
+const newSelected = new Map(selectedDocuments);
+let newTotalChunks = totalChunks;
+
+if (isSelected) {
+newSelected.set(docId, chunks);
+newTotalChunks += chunks;
+} else {
+newSelected.delete(docId);
+newTotalChunks -= chunks;
+}
+
+setSelectedDocuments(newSelected);
+setTotalChunks(newTotalChunks);
+setShowVectorSummary(newSelected.size > 0);
+};
+
+const toggleSelectAll = () => {
+if (selectedDocuments.size === documents.length) {
+setSelectedDocuments(new Map());
+setTotalChunks(0);
+setShowVectorSummary(false);
+} else {
+const newSelected = new Map();
+let newTotal = 0;
+documents.forEach(doc => {
+newSelected.set(doc.id, doc.chunks);
+newTotal += doc.chunks;
+});
+setSelectedDocuments(newSelected);
+setTotalChunks(newTotal);
+setShowVectorSummary(true);
+}
+};
+
+const generateAPIKey = () => {
+setShowProcessingBanner(true);
+
+setTimeout(() => {
+setShowProcessingBanner(false);
+setShowApiCredentials(true);
+}, 2000);
+};
+
+const copyToClipboard = (text) => {
+navigator.clipboard.writeText(text).then(() => {
+console.log('Copied to clipboard');
+});
+};
+
+const codeExamples = {
+python: `from knowledge_platform import KnowledgeClient
+
+# Initialize client with your API credentials
+client = KnowledgeClient(
+api_key="sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890",
+request_id="REQ-2025-0807-3F7K9M2P"
+)
+
+# Perform a vector search on your selected documents
+response = client.vector.search(
+query="How to implement model versioning in production?",
+top_k=5,
+include_metadata=True,
+track_usage=True  # Enable chunk tracking for impact analysis
+)
+
+# Access the results
+for result in response.results:
+print(f"Score: {result.score}")
+print(f"Content: {result.content}")
+print(f"Document: {result.metadata.document_id}")
+print(f"Section: {result.metadata.section}")`,
+
+javascript: `import { KnowledgeClient } from '@knowledge-platform/client';
+
+// Initialize client with your API credentials
+const client = new KnowledgeClient({
+apiKey: 'sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890',
+requestId: 'REQ-2025-0807-3F7K9M2P'
+});
+
+// Perform a vector search on your selected documents
+const response = await client.vector.search({
+query: 'How to implement model versioning in production?',
+topK: 5,
+includeMetadata: true,
+trackUsage: true  // Enable chunk tracking for impact analysis
+});
+
+// Access the results
+response.results.forEach(result => {
+console.log('Score:', result.score);
+console.log('Content:', result.content);
+console.log('Document:', result.metadata.documentId);
+console.log('Section:', result.metadata.section);
+});`,
+
+curl: `curl -X POST https://api.knowledge-platform.com/v1/vector/search \\
+-H "Authorization: Bearer sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890" \\
+-H "X-Request-ID: REQ-2025-0807-3F7K9M2P" \\
+-H "Content-Type: application/json" \\
+-d '{
+"query": "How to implement model versioning in production?",
+"top_k": 5,
+"include_metadata": true,
+"track_usage": true
+}'`
+};
+
+return (
+<div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-5">
+  <div className="max-w-7xl mx-auto">
+    {/* Header */}
+    <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
+      <h1 className="text-3xl font-bold text-gray-800 mb-2">Knowledge Discovery & Integration</h1>
+      <p className="text-gray-600">Search, select, and connect documents to your AI solution with pre-computed vector embeddings</p>
     </div>
-    <div class="ai-badge">
-      ⚡ AI-Powered Semantic Search
+
+    {/* Search Section */}
+    <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
+      <div className="flex gap-3 mb-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+          <input
+                  type="text"
+                  className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-xl text-base focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200"
+                  placeholder="Search for knowledge documents..."
+                  defaultValue="machine learning best practices"
+          />
+        </div>
+        <button className="px-8 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-semibold hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200">
+          Search
+        </button>
+      </div>
+      <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-sm font-semibold">
+        ⚡ AI-Powered Semantic Search
+      </div>
+    </div>
+
+    {/* Results Section */}
+    <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
+      <div className="flex justify-between items-center mb-5 pb-4 border-b-2 border-gray-200">
+        <span className="text-gray-700 font-medium">Found {documents.length} documents</span>
+        <button
+                onClick={toggleSelectAll}
+                className="px-4 py-2 bg-gray-50 border border-gray-300 rounded-lg text-sm hover:bg-gray-100 transition-colors"
+        >
+          {selectedDocuments.size === documents.length ? 'Deselect All' : 'Select All'}
+        </button>
+      </div>
+
+      {/* Document Cards */}
+      {documents.map((doc) => (
+      <div
+              key={doc.id}
+              className={`bg-white border-2 rounded-xl p-5 mb-4 transition-all duration-300 hover:shadow-md ${
+              selectedDocuments.has(doc.id)
+              ? 'border-purple-500 bg-gradient-to-r from-purple-50/50 to-indigo-50/50'
+      : 'border-gray-200 hover:border-gray-300'
+      }`}
+      >
+      <div className="flex items-start gap-4 mb-4">
+        <input
+                type="checkbox"
+                className="w-5 h-5 mt-0.5 accent-purple-600 cursor-pointer"
+                checked={selectedDocuments.has(doc.id)}
+                onChange={(e) => updateSelection(doc.id, doc.chunks, e.target.checked)}
+        />
+        <div className="flex-1">
+          <div className="flex items-center gap-3 mb-2">
+            <h3 className="text-lg font-semibold text-gray-800">{doc.title}</h3>
+            <span className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 rounded-lg text-xs text-gray-600">
+                      📄 {doc.chunks} chunks
+                    </span>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 rounded-lg p-3 mb-4">
+        <p className="text-gray-700 text-sm leading-relaxed">{doc.summary}</p>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        {Object.entries(doc.metadata).map(([key, value]) => (
+        <div key={key}>
+          <div className="text-xs uppercase text-gray-500 font-semibold mb-1">
+            {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
+          </div>
+          <div className={`text-sm font-medium ${key === 'status' ? 'text-green-600' : 'text-gray-800'}`}>
+          {key === 'status' ? '✓ ' : ''}{value}
+        </div>
+      </div>
+      ))}
     </div>
   </div>
+  ))}
+</div>
 
-  <!-- Results Section -->
-  <div class="results-section">
-    <div class="results-header">
-      <span class="result-count">Found 3 documents</span>
-      <button class="select-all-btn" onclick="toggleSelectAll()">Select All</button>
+{/* Vector Database Summary */}
+{showVectorSummary && (
+<div className="bg-gradient-to-r from-purple-100/80 to-indigo-100/80 backdrop-blur-sm rounded-2xl p-5 mb-6 border border-purple-200/50">
+  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+    <Database size={20} />
+    📊 Vector Database Configuration
+  </h3>
+  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="bg-white rounded-lg p-3 text-center">
+      <div className="text-2xl font-bold text-purple-600">{totalChunks.toLocaleString()}</div>
+      <div className="text-sm text-gray-600">Total Chunks</div>
     </div>
-
-    <!-- Document Cards -->
-    <div class="document-card" data-doc-id="DOC-2024-ML-001" data-chunks="127">
-      <div class="document-header">
-        <input type="checkbox" class="document-checkbox" onchange="updateSelection()">
-        <div class="document-title-wrapper">
-          <div class="document-title-line">
-            <span class="document-title">Machine Learning Best Practices Guide v2.3</span>
-            <span class="chunk-info">📄 127 chunks</span>
-          </div>
-        </div>
-      </div>
-      <div class="document-summary">
-        This comprehensive guide covers essential machine learning practices including data preprocessing, model selection, hyperparameter tuning, and deployment strategies. Updated with latest industry standards and real-world case studies from production environments.
-      </div>
-      <div class="metadata-grid">
-        <div class="metadata-item">
-          <span class="metadata-label">Team Owner</span>
-          <span class="metadata-value">Data Science Team</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Primary Owner</span>
-          <span class="metadata-value">Dr Sarah Mitchell</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Update Frequency</span>
-          <span class="metadata-value">Quarterly</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Next Update</span>
-          <span class="metadata-value">15 Mar 2025</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Chunking Method</span>
-          <span class="metadata-value">Section-based</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">App Status</span>
-          <span class="metadata-value status-ready">✓ Ready</span>
-        </div>
-      </div>
+    <div className="bg-white rounded-lg p-3 text-center">
+      <div className="text-2xl font-bold text-purple-600">{(totalChunks * 256).toLocaleString()}</div>
+      <div className="text-sm text-gray-600">Est. Tokens</div>
     </div>
-
-    <div class="document-card" data-doc-id="DOC-2024-AI-ETHICS-007" data-chunks="89">
-      <div class="document-header">
-        <input type="checkbox" class="document-checkbox" onchange="updateSelection()">
-        <div class="document-title-wrapper">
-          <div class="document-title-line">
-            <span class="document-title">AI Ethics and Responsible ML Framework</span>
-            <span class="chunk-info">📄 89 chunks</span>
-          </div>
-        </div>
-      </div>
-      <div class="document-summary">
-        Framework for implementing ethical AI practices, including bias detection, fairness metrics, transparency requirements, and governance structures. Includes templates and checklists for responsible AI development.
-      </div>
-      <div class="metadata-grid">
-        <div class="metadata-item">
-          <span class="metadata-label">Team Owner</span>
-          <span class="metadata-value">AI Governance Board</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Primary Owner</span>
-          <span class="metadata-value">James Chen</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Update Frequency</span>
-          <span class="metadata-value">Bi-annual</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Next Update</span>
-          <span class="metadata-value">01 Jun 2025</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Chunking Method</span>
-          <span class="metadata-value">Section-based</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">App Status</span>
-          <span class="metadata-value status-ready">✓ Ready</span>
-        </div>
-      </div>
+    <div className="bg-white rounded-lg p-3 text-center">
+      <div className="text-2xl font-bold text-purple-600">1536</div>
+      <div className="text-sm text-gray-600">Vector Dimensions</div>
     </div>
-
-    <div class="document-card" data-doc-id="DOC-2024-DEPLOY-012" data-chunks="156">
-      <div class="document-header">
-        <input type="checkbox" class="document-checkbox" onchange="updateSelection()">
-        <div class="document-title-wrapper">
-          <div class="document-title-line">
-            <span class="document-title">ML Model Deployment & Monitoring Playbook</span>
-            <span class="chunk-info">📄 156 chunks</span>
-          </div>
-        </div>
-      </div>
-      <div class="document-summary">
-        Complete guide for deploying machine learning models to production, including containerisation, API design, monitoring strategies, and incident response procedures. Features real-time performance tracking guidelines.
-      </div>
-      <div class="metadata-grid">
-        <div class="metadata-item">
-          <span class="metadata-label">Team Owner</span>
-          <span class="metadata-value">Platform Engineering</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Primary Owner</span>
-          <span class="metadata-value">Alexandra Torres</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Update Frequency</span>
-          <span class="metadata-value">Monthly</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Next Update</span>
-          <span class="metadata-value">01 Feb 2025</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">Chunking Method</span>
-          <span class="metadata-value">Section-based</span>
-        </div>
-        <div class="metadata-item">
-          <span class="metadata-label">App Status</span>
-          <span class="metadata-value status-ready">✓ Ready</span>
-        </div>
-      </div>
+    <div className="bg-white rounded-lg p-3 text-center">
+      <div className="text-2xl font-bold text-purple-600">{(totalChunks * 0.05).toFixed(1)} MB</div>
+      <div className="text-sm text-gray-600">Index Size</div>
     </div>
   </div>
+</div>
+)}
 
-  <!-- Vector Database Summary -->
-  <div class="vector-summary" id="vectorSummary">
-    <h3>📊 Vector Database Configuration</h3>
-    <div class="vector-stats">
-      <div class="vector-stat">
-        <span class="vector-stat-value" id="totalChunks">0</span>
-        <span class="vector-stat-label">Total Chunks</span>
-      </div>
-      <div class="vector-stat">
-        <span class="vector-stat-value" id="estimatedTokens">0</span>
-        <span class="vector-stat-label">Est. Tokens</span>
-      </div>
-      <div class="vector-stat">
-        <span class="vector-stat-value" id="vectorDims">1536</span>
-        <span class="vector-stat-label">Vector Dimensions</span>
-      </div>
-      <div class="vector-stat">
-        <span class="vector-stat-value" id="indexSize">0 MB</span>
-        <span class="vector-stat-label">App Size</span>
-      </div>
-    </div>
+{/* API Configuration Section */}
+<div className="bg-white/95 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/20">
+  <div className="mb-5">
+    <h2 className="text-xl font-semibold text-gray-800 mb-2">API Integration Configuration</h2>
+    <p className="text-gray-600 text-sm">Generate secure API credentials with metadata-filtered access to pre-computed vector embeddings</p>
   </div>
 
-  <!-- API Configuration Section -->
-  <div class="api-section">
-    <div class="api-header">
-      <h2>API Integration Configuration</h2>
-      <p style="color: #718096; font-size: 14px; margin-top: 8px;">Generate secure API credentials with metadata-filtered access to pre-computed vector embeddings</p>
-    </div>
+  <div className="inline-block px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-full text-sm font-semibold mb-5">
+    {selectedDocuments.size} document{selectedDocuments.size !== 1 ? 's' : ''} selected
+  </div>
 
-    <div class="selected-docs-count" id="selectedCount">
-      0 documents selected
-    </div>
+  {showProcessingBanner && (
+  <div className="flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white p-3 rounded-lg mb-4">
+    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+    <span className="font-medium">Configuring vector database access filters...</span>
+  </div>
+  )}
 
-    <div class="processing-banner" id="processingBanner">
-      <span class="loading"></span>
-      <span class="processing-text">Configuring vector database access filters...</span>
-    </div>
+  <button
+          onClick={generateAPIKey}
+          disabled={selectedDocuments.size === 0}
+  className="w-full p-4 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl font-semibold text-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none mb-5"
+  >
+  Generate API Key & Configure Access
+  </button>
 
-    <button class="generate-api-btn" id="generateBtn" onclick="generateAPIKey()" disabled>
-      Generate API Key & Configure Access
-    </button>
-
-    <div class="api-credentials" id="apiCredentials">
-      <div class="credential-item">
-        <div class="credential-label">Request ID</div>
-        <div class="credential-value">
-          <span id="requestId">REQ-2025-0807-3F7K9M2P</span>
-          <button class="copy-btn" onclick="copyToClipboard('requestId')">Copy</button>
+  {showApiCredentials && (
+  <div className="bg-gray-900 rounded-xl p-6 text-green-400">
+    <div className="space-y-5">
+      <div>
+        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Request ID</div>
+        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+          <code className="text-sm">REQ-2025-0807-3F7K9M2P</code>
+          <button
+                  onClick={() => copyToClipboard('REQ-2025-0807-3F7K9M2P')}
+          className="p-1 text-gray-400 hover:text-white transition-colors"
+          >
+          <Copy size={16} />
+          </button>
         </div>
       </div>
 
-      <div class="credential-item">
-        <div class="credential-label">API Key (HMAC-SHA256 Signed)</div>
-        <div class="credential-value">
-          <span id="apiKey">sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890</span>
-          <button class="copy-btn" onclick="copyToClipboard('apiKey')">Copy</button>
+      <div>
+        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">API Key (HMAC-SHA256 Signed)</div>
+        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+          <code className="text-sm break-all">sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890</code>
+          <button
+                  onClick={() => copyToClipboard('sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890')}
+          className="p-1 text-gray-400 hover:text-white transition-colors ml-2"
+          >
+          <Copy size={16} />
+          </button>
         </div>
       </div>
 
-      <div class="credential-item">
-        <div class="credential-label">Vector Search Endpoint</div>
-        <div class="credential-value">
-          <span id="endpoint">https://api.knowledge-platform.com/v1/vector/search</span>
-          <button class="copy-btn" onclick="copyToClipboard('endpoint')">Copy</button>
+      <div>
+        <div className="text-xs uppercase text-gray-400 mb-2 font-semibold">Vector Search Endpoint</div>
+        <div className="flex items-center justify-between bg-gray-800 p-3 rounded-lg">
+          <code className="text-sm">https://api.knowledge-platform.com/v1/vector/search</code>
+          <button
+                  onClick={() => copyToClipboard('https://api.knowledge-platform.com/v1/vector/search')}
+          className="p-1 text-gray-400 hover:text-white transition-colors"
+          >
+          <Copy size={16} />
+          </button>
         </div>
       </div>
 
-      <div class="technical-details">
-        <h4>Technical Configuration</h4>
-        <div class="tech-grid">
-          <div class="tech-item">
-            <span class="tech-label">Access Method</span>
-            <span class="tech-value">Metadata Filtering</span>
-          </div>
-          <div class="tech-item">
-            <span class="tech-label">Query Type</span>
-            <span class="tech-value">Real-time Embedding</span>
-          </div>
-          <div class="tech-item">
-            <span class="tech-label">Chunk Strategy</span>
-            <span class="tech-value">Section-based</span>
-          </div>
-          <div class="tech-item">
-            <span class="tech-label">Vector DB</span>
-            <span class="tech-value">Central App</span>
-          </div>
-          <div class="tech-item">
-            <span class="tech-label">Filter Keys</span>
-            <span class="tech-value" id="filterKeys">[]</span>
-          </div>
-          <div class="tech-item">
-            <span class="tech-label">Rate Limit</span>
-            <span class="tech-value">1000 req/min</span>
-          </div>
+      {/* Code Examples */}
+      <div className="mt-6">
+        <h4 className="text-xs uppercase text-gray-400 mb-3 font-semibold">Integration Examples</h4>
+
+        <div className="flex gap-2 mb-4">
+          {Object.keys(codeExamples).map((lang) => (
+          <button
+                  key={lang}
+                  onClick={() => setActiveCodeExample(lang)}
+          className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          activeCodeExample === lang
+          ? 'bg-gray-700 text-white'
+          : 'bg-gray-800 text-gray-400 hover:text-white'
+          }`}
+          >
+          {lang.charAt(0).toUpperCase() + lang.slice(1)}
+          </button>
+          ))}
+        </div>
+
+        <div className="bg-gray-800 rounded-lg p-4 overflow-x-auto">
+                    <pre className="text-green-400 text-sm">
+                      <code>{codeExamples[activeCodeExample]}</code>
+                    </pre>
         </div>
       </div>
 
-      <div class="security-notice">
-        <h4>⚠️ Security Notice</h4>
-        <p>
+      {/* Security Notice */}
+      <div className="bg-red-900/50 border border-red-700 rounded-lg p-4 mt-4">
+        <h4 className="text-red-300 font-semibold mb-2">⚠️ Security Notice</h4>
+        <p className="text-red-200 text-sm">
           This API key is cryptographically bound to the selected documents and cannot be modified.
           The key includes an HMAC signature that validates the document selection server-side.
           To add or remove documents, you must generate a new key and revoke this one.
         </p>
       </div>
 
-      <div class="usage-tracking">
-        <h4>📊 Usage Tracking & Change Impact Analysis</h4>
-        <p>
-          All chunk retrievals are tracked by Request ID. When documents are updated, we'll analyse which chunks your AI agent uses most frequently and notify you of potential impacts. This helps you assess risk before accepting document updates.
-        </p>
-      </div>
-
-      <div class="api-actions">
-        <button class="action-btn" onclick="updateDocuments()">
+      <div className="flex gap-3 mt-4">
+        <button className="flex-1 p-3 border border-gray-600 text-gray-300 rounded-lg hover:bg-gray-800 transition-colors">
           Update Document Selection
         </button>
-        <button class="action-btn danger" onclick="revokeKey()">
+        <button className="flex-1 p-3 border border-red-600 text-red-400 rounded-lg hover:bg-red-900/20 transition-colors">
           Revoke This Key
         </button>
       </div>
-
-      <!-- Code Examples Section -->
-      <div class="code-examples" id="codeExamples" style="display: none;">
-        <h4 style="color: #a0aec0; font-size: 13px; text-transform: uppercase; margin: 24px 0 12px 0; letter-spacing: 0.5px;">Integration Examples</h4>
-
-        <div class="code-tabs" style="display: flex; gap: 8px; margin-bottom: 16px;">
-          <button class="code-tab active" onclick="showCodeExample('python')" style="padding: 8px 16px; background: #4a5568; border: none; border-radius: 6px; color: white; font-size: 12px; cursor: pointer;">Python</button>
-          <button class="code-tab" onclick="showCodeExample('javascript')" style="padding: 8px 16px; background: #2d3748; border: none; border-radius: 6px; color: #a0aec0; font-size: 12px; cursor: pointer;">JavaScript</button>
-          <button class="code-tab" onclick="showCodeExample('curl')" style="padding: 8px 16px; background: #2d3748; border: none; border-radius: 6px; color: #a0aec0; font-size: 12px; cursor: pointer;">cURL</button>
-        </div>
-
-        <div class="code-example" id="python-example" style="background: #2d3748; border-radius: 8px; padding: 16px; overflow-x: auto;">
-                        <pre style="color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 13px; margin: 0; white-space: pre;"><code><span style="color: #c792ea;">from</span> knowledge_platform <span style="color: #c792ea;">import</span> KnowledgeClient
-
-<span style="color: #676e95;"># Initialize client with your API credentials</span>
-client = KnowledgeClient(
-    api_key=<span style="color: #c3e88d;">"sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890"</span>,
-    request_id=<span style="color: #c3e88d;">"REQ-20250807-3F7K9M2P"</span>
-)
-
-<span style="color: #676e95;"># Perform a vector search on your selected documents</span>
-response = client.vector.search(
-    query=<span style="color: #c3e88d;">"How to implement model versioning in production?"</span>,
-    top_k=<span style="color: #f78c6c;">5</span>,
-    include_metadata=<span style="color: #f78c6c;">True</span>,
-    track_usage=<span style="color: #f78c6c;">True</span>  <span style="color: #676e95;"># Enable chunk tracking for impact analysis</span>
-)
-
-<span style="color: #676e95;"># Access the results</span>
-<span style="color: #c792ea;">for</span> result <span style="color: #c792ea;">in</span> response.results:
-    <span style="color: #82aaff;">print</span>(<span style="color: #c3e88d;">f"Score: </span>{result.score}<span style="color: #c3e88d;">"</span>)
-    <span style="color: #82aaff;">print</span>(<span style="color: #c3e88d;">f"Content: </span>{result.content}<span style="color: #c3e88d;">"</span>)
-    <span style="color: #82aaff;">print</span>(<span style="color: #c3e88d;">f"Document: </span>{result.metadata.document_id}<span style="color: #c3e88d;">"</span>)
-    <span style="color: #82aaff;">print</span>(<span style="color: #c3e88d;">f"Section: </span>{result.metadata.section}<span style="color: #c3e88d;">"</span>)</code></pre>
-        </div>
-
-        <div class="code-example" id="javascript-example" style="background: #2d3748; border-radius: 8px; padding: 16px; overflow-x: auto; display: none;">
-                        <pre style="color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 13px; margin: 0; white-space: pre;"><code><span style="color: #c792ea;">import</span> { KnowledgeClient } <span style="color: #c792ea;">from</span> <span style="color: #c3e88d;">'@knowledge-platform/client'</span>;
-
-<span style="color: #676e95;">// Initialize client with your API credentials</span>
-<span style="color: #c792ea;">const</span> client = <span style="color: #c792ea;">new</span> <span style="color: #82aaff;">KnowledgeClient</span>({
-  apiKey: <span style="color: #c3e88d;">'sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890'</span>,
-  requestId: <span style="color: #c3e88d;">'REQ-20250807-3F7K9M2P'</span>
-});
-
-<span style="color: #676e95;">// Perform a vector search on your selected documents</span>
-<span style="color: #c792ea;">const</span> response = <span style="color: #c792ea;">await</span> client.vector.<span style="color: #82aaff;">search</span>({
-  query: <span style="color: #c3e88d;">'How to implement model versioning in production?'</span>,
-  topK: <span style="color: #f78c6c;">5</span>,
-  includeMetadata: <span style="color: #f78c6c;">true</span>,
-  trackUsage: <span style="color: #f78c6c;">true</span>  <span style="color: #676e95;">// Enable chunk tracking for impact analysis</span>
-});
-
-<span style="color: #676e95;">// Access the results</span>
-response.results.<span style="color: #82aaff;">forEach</span>(result => {
-  console.<span style="color: #82aaff;">log</span>(<span style="color: #c3e88d;">`Score: ${result.score}`</span>);
-  console.<span style="color: #82aaff;">log</span>(<span style="color: #c3e88d;">`Content: ${result.content}`</span>);
-  console.<span style="color: #82aaff;">log</span>(<span style="color: #c3e88d;">`Document: ${result.metadata.documentId}`</span>);
-  console.<span style="color: #82aaff;">log</span>(<span style="color: #c3e88d;">`Section: ${result.metadata.section}`</span>);
-});</code></pre>
-        </div>
-
-        <div class="code-example" id="curl-example" style="background: #2d3748; border-radius: 8px; padding: 16px; overflow-x: auto; display: none;">
-                        <pre style="color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 13px; margin: 0; white-space: pre;"><code>curl -X POST https://api.knowledge-platform.com/v1/vector/search \
-  -H <span style="color: #c3e88d;">"Authorization: Bearer sk_live_4b8f2c91d7e3a5f6891023b4c7d8e9f0a1b2c3d4e5f67890abcdef1234567890"</span> \
-  -H <span style="color: #c3e88d;">"X-Request-ID: REQ-20250807-3F7K9M2P"</span> \
-  -H <span style="color: #c3e88d;">"Content-Type: application/json"</span> \
-  -d <span style="color: #c3e88d;">'{
-    "query": "How to implement model versioning in production?",
-    "top_k": 5,
-    "include_metadata": true,
-    "track_usage": true
-  }'</span></code></pre>
-        </div>
-
-        <div style="margin-top: 16px; padding: 12px; background: rgba(45, 55, 72, 0.5); border-radius: 6px;">
-          <h5 style="color: #a0aec0; font-size: 12px; margin-bottom: 8px;">Response Format</h5>
-          <pre style="color: #e2e8f0; font-family: 'Courier New', monospace; font-size: 12px; margin: 0; white-space: pre;"><code>{
-  "results": [
-    {
-      "chunk_id": "DOC-2024-ML-001_chunk_47",
-      "content": "Model versioning best practices include semantic versioning...",
-      "score": 0.94,
-      "metadata": {
-        "document_id": "DOC-2024-ML-001",
-        "document_title": "Machine Learning Best Practices Guide v2.3",
-        "section": "Chapter 4: Deployment",
-        "last_updated": "2024-12-15",
-        "team_owner": "Data Science Team",
-        "primary_owner": "Dr Sarah Mitchell"
-      }
-    }
-  ],
-  "usage": {
-    "chunks_retrieved": 5,
-    "tokens_processed": 1280,
-    "request_id": "REQ-20250807-3F7K9M2P",
-    "timestamp": "2025-08-07T10:30:45Z"
-  }
-}</code></pre>
-        </div>
-      </div>
     </div>
   </div>
+  )}
 </div>
+</div>
+</div>
+);
+};
 
-<script>
-  // Track selected documents and chunks
-  let selectedDocuments = new Map();
-  let totalChunks = 0;
-
-  function performSearch() {
-    // Simulate search with loading state
-    const btn = document.querySelector('.search-btn');
-    btn.innerHTML = '<span class="loading"></span>';
-    setTimeout(() => {
-      btn.innerHTML = 'Search';
-    }, 1000);
-  }
-
-  function updateSelection() {
-    selectedDocuments.clear();
-    totalChunks = 0;
-
-    const checkboxes = document.querySelectorAll('.document-checkbox:checked');
-
-    checkboxes.forEach(checkbox => {
-      const card = checkbox.closest('.document-card');
-      const docId = card.dataset.docId;
-      const chunks = parseInt(card.dataset.chunks);
-      selectedDocuments.set(docId, chunks);
-      totalChunks += chunks;
-      card.classList.add('selected');
-    });
-
-    // Update unselected cards
-    document.querySelectorAll('.document-checkbox:not(:checked)').forEach(checkbox => {
-      checkbox.closest('.document-card').classList.remove('selected');
-    });
-
-    // Update count and button state
-    const count = selectedDocuments.size;
-    document.getElementById('selectedCount').textContent = `${count} document${count !== 1 ? 's' : ''} selected`;
-    document.getElementById('generateBtn').disabled = count === 0;
-
-    // Update vector summary
-    if (count > 0) {
-      document.getElementById('vectorSummary').classList.add('show');
-      document.getElementById('totalChunks').textContent = totalChunks.toLocaleString();
-      document.getElementById('estimatedTokens').textContent = (totalChunks * 256).toLocaleString(); // Estimate 256 tokens per chunk
-      document.getElementById('indexSize').textContent = `${(totalChunks * 0.05).toFixed(1)} MB`; // Estimate 0.05MB per chunk
-    } else {
-      document.getElementById('vectorSummary').classList.remove('show');
-    }
-  }
-
-  function toggleSelectAll() {
-    const checkboxes = document.querySelectorAll('.document-checkbox');
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-
-    checkboxes.forEach(cb => {
-      cb.checked = !allChecked;
-    });
-
-    updateSelection();
-  }
-
-  function generateAPIKey() {
-    // Show processing banner
-    const processingBanner = document.getElementById('processingBanner');
-    processingBanner.classList.add('show');
-
-    // Simulate API key generation with delay
-    setTimeout(() => {
-      processingBanner.classList.remove('show');
-
-      const credentials = document.getElementById('apiCredentials');
-      credentials.classList.add('show');
-
-      // Generate mock secure values
-      const requestId = generateRequestId();
-      const apiKey = generateSecureAPIKey(Array.from(selectedDocuments.keys()));
-      const filterKeys = Array.from(selectedDocuments.keys()).join(', ');
-
-      document.getElementById('requestId').textContent = requestId;
-      document.getElementById('apiKey').textContent = apiKey;
-      document.getElementById('filterKeys').textContent = `[${filterKeys}]`;
-
-      // Show code examples
-      document.getElementById('codeExamples').style.display = 'block';
-
-      // Scroll to credentials
-      credentials.scrollIntoView({ behavior: 'smooth' });
-    }, 2000);
-  }
-
-  function generateRequestId() {
-    const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-    const random = Math.random().toString(36).substring(2, 10).toUpperCase();
-    return `REQ-${date}-${random}`;
-  }
-
-  function generateSecureAPIKey(documentIds) {
-    // In production, this would include:
-    // - HMAC-SHA256 signature of document IDs
-    // - Timestamp for key rotation
-    // - User/tenant ID
-    // - Permissions scope
-    // - Metadata filter configuration
-    const prefix = 'sk_live_';
-    const random = Array.from({length: 64}, () =>
-            Math.floor(Math.random() * 16).toString(16)
-    ).join('');
-    return prefix + random;
-  }
-
-  function copyToClipboard(elementId) {
-    const element = document.getElementById(elementId);
-    const text = element.textContent;
-
-    navigator.clipboard.writeText(text).then(() => {
-      const btn = element.nextElementSibling;
-      const originalText = btn.textContent;
-      btn.textContent = 'Copied!';
-      btn.style.background = '#48bb78';
-
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.background = '';
-      }, 2000);
-    });
-  }
-
-  function updateDocuments() {
-    alert('This will generate a new API key with updated document selection. The current key will remain active until explicitly revoked. Your usage statistics will be preserved and linked to the new Request ID.');
-  }
-
-  function revokeKey() {
-    if (confirm('Are you sure you want to revoke this API key? All connected AI agents will lose access. Usage analytics for this Request ID will be archived.')) {
-      alert('API key has been revoked. Connected agents have been notified via webhook. Historical usage data has been archived for analysis.');
-      document.getElementById('apiCredentials').classList.remove('show');
-      document.getElementById('codeExamples').style.display = 'none';
-    }
-  }
-
-  function showCodeExample(language) {
-    // Update tab styles
-    document.querySelectorAll('.code-tab').forEach(tab => {
-      tab.style.background = '#2d3748';
-      tab.style.color = '#a0aec0';
-    });
-    event.target.style.background = '#4a5568';
-    event.target.style.color = 'white';
-
-    // Hide all examples
-    document.querySelectorAll('.code-example').forEach(example => {
-      example.style.display = 'none';
-    });
-
-    // Show selected example
-    document.getElementById(`${language}-example`).style.display = 'block';
-  }
-
-  // Example API call structure (for documentation)
-  const exampleAPICall = {
-    method: 'POST',
-    url: 'https://api.knowledge-platform.com/v1/vector/search',
-    headers: {
-      'Authorization': 'Bearer sk_live_...',
-      'X-Request-ID': 'REQ-2025-0807-...',
-      'Content-Type': 'application/json'
-    },
-    body: {
-      query: 'How to implement model versioning?',
-      top_k: 5,
-      include_metadata: true,
-      track_usage: true  // Enables chunk usage tracking for change impact analysis
-    }
-  };
-
-  // Example response structure
-  const exampleResponse = {
-    results: [
-      {
-        chunk_id: 'DOC-2024-ML-001_chunk_47',
-        content: 'Model versioning best practices...',
-        score: 0.94,
-        metadata: {
-          document_id: 'DOC-2024-ML-001',
-          section: 'Chapter 4: Deployment',
-          last_updated: '2024-12-15'
-        }
-      }
-    ],
-    usage: {
-      chunks_retrieved: 5,
-      tokens_processed: 1280,
-      request_id: 'REQ-2025-0807-3F7K9M2P'
-    }
-  };
-</script>
+export default KnowledgeConsumption;
