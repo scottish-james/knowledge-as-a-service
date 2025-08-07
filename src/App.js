@@ -580,7 +580,10 @@ const App = () => {
                             <button
                                 onClick={() => {
                                     console.log('Navigating to knowledge-consumption.html');
-                                    window.location.href = '/knowledge-consumption.html';
+                                    // Try the direct path first
+                                    const url = `${window.location.origin}${process.env.PUBLIC_URL}/knowledge-consumption.html`;
+                                    console.log('Opening URL:', url);
+                                    window.open(url, '_blank');
                                 }}
                                 className="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium"
                             >
