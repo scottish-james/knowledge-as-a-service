@@ -14,11 +14,10 @@ const App = () => {
         { title: 'Product Requirements Specification v2.1', similarity: 87, status: 'current' },
         { title: 'Technical Architecture Guidelines', similarity: 64, status: 'archived' }
     ]);
-    const fileInputRef = useRef(null);
 
     // If consumption view is selected, render KnowledgeConsumption component
     if (currentView === 'consumption') {
-        return <KnowledgeConsumption />;
+        return <KnowledgeConsumption onBack={() => setCurrentView('governance')} />;
     }
 
     const screens = [
@@ -28,8 +27,11 @@ const App = () => {
         { id: 4, title: 'Review & Submit', icon: Check }
     ];
 
-    const handleFileUpload = (file) => {
-        setUploadedFile(file);
+    const handleMockUpload = () => {
+        // Set a mock file for demonstration
+        const mockFile = { name: 'API_Documentation_v2.1.pdf' };
+        setUploadedFile(mockFile);
+
         // Simulate upload progress
         let progress = 0;
         const interval = setInterval(() => {
@@ -40,20 +42,6 @@ const App = () => {
                 setTimeout(() => setCurrentScreen(2), 500);
             }
         }, 200);
-    };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const files = Array.from(e.dataTransfer.files);
-        if (files.length > 0) {
-            handleFileUpload(files[0]);
-        }
     };
 
     const getQualityColor = (score) => {
@@ -106,31 +94,21 @@ const App = () => {
                 <p className="text-gray-600">Add documents to your trusted knowledge base</p>
             </div>
 
-            <div
-                onDragOver={handleDragOver}
-                onDrop={handleDrop}
-                className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center hover:border-purple-400 transition-colors cursor-pointer"
-                onClick={() => fileInputRef.current?.click()}
-            >
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
                 <Upload size={48} className="mx-auto text-gray-400 mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Drop files here or click to browse
+                    Demo Mode - Click to simulate upload
                 </h3>
                 <p className="text-gray-600 mb-4">
-                    Supports PDF, Word, PowerPoint, and text files up to 50MB
+                    This will simulate uploading "API_Documentation_v2.1.pdf"
                 </p>
-                <button className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                    Select Files
+                <button
+                    className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                    onClick={handleMockUpload}
+                >
+                    Upload Document
                 </button>
             </div>
-
-            <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
-                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-            />
 
             {uploadProgress > 0 && (
                 <div className="mt-8">

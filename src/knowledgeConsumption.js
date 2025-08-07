@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { Search, FileText, Database, Key, Copy, Code, ExternalLink, TrendingUp, Shield, AlertTriangle } from 'lucide-react';
+import { Search, FileText, Database, Key, Copy, Code, ExternalLink, TrendingUp, Shield, AlertTriangle, ArrowLeft } from 'lucide-react';
 
-const KnowledgeConsumption = () => {
+const KnowledgeConsumption = ({ onBack }) => {
   const [selectedDocuments, setSelectedDocuments] = useState(new Map());
   const [totalChunks, setTotalChunks] = useState(0);
   const [showVectorSummary, setShowVectorSummary] = useState(false);
@@ -180,8 +180,17 @@ console.log('Usage tracked:', result.usage.chunkTracked);
   return (
       <div className="min-h-screen bg-gradient-to-br from-purple-600 via-purple-700 to-indigo-800 p-5">
         <div className="max-w-7xl mx-auto">
-          {/* Header */}
+          {/* Header with Back Button */}
           <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-2xl p-6 mb-6 shadow-xl border border-white border-opacity-20">
+            <div className="flex items-center gap-4 mb-4">
+              <button
+                  onClick={onBack}
+                  className="flex items-center gap-2 px-4 py-2 bg-purple-900 hover:bg-purple-800 text-white rounded-lg transition-colors"
+              >
+                <ArrowLeft size={16}/>
+                Back to Governance
+              </button>
+            </div>
             <h1 className="text-3xl font-bold text-gray-800 mb-2">Knowledge Discovery & Integration</h1>
             <p className="text-gray-600">Search, select, and connect documents to your AI solution with pre-computed vector embeddings</p>
           </div>
