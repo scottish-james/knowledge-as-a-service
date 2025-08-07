@@ -3,10 +3,27 @@
   "version": "1.0.0",
   "homepage": "https://scottish-james.github.io/knowledge-as-a-service",
   "dependencies": {
+    "@yoopta/action-menu-list": "^4.9.9",
+    "@yoopta/callout": "^4.9.9",
+    "@yoopta/code": "^4.9.9",
+    "@yoopta/editor": "^4.9.9",
+    "@yoopta/embed": "^4.9.9",
+    "@yoopta/file": "^4.9.9",
+    "@yoopta/headings": "^4.9.9",
+    "@yoopta/image": "^4.9.9",
+    "@yoopta/link-tool": "^4.9.9",
+    "@yoopta/lists": "^4.9.9",
+    "@yoopta/marks": "^4.9.9",
+    "@yoopta/paragraph": "^4.9.9",
+    "@yoopta/starter-kit": "^4.7.1-alpha.3",
+    "@yoopta/toolbar": "^4.9.9",
+    "@yoopta/video": "^4.9.9",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
-    "lucide-react": "^0.263.1"
+    "slate": "^0.102.0",
+    "slate-react": "^0.102.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -14,7 +31,6 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
-  "devDependencies": {},
   "browserslist": {
     "production": [
       ">0.2%",
