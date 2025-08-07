@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Eye, Settings, Check, X, AlertTriangle, Edit3, Users, Tag, Calendar, Archive, RefreshCw, Copy, Merge, Plus } from 'lucide-react';
 
-const KnowledgeGovernanceApp = () => {
+const App = () => {
     const [currentScreen, setCurrentScreen] = useState(1);
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
@@ -569,20 +569,38 @@ const KnowledgeGovernanceApp = () => {
         <div className="min-h-screen bg-gray-50">
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-6 py-4">
-                    <h1 className="text-xl font-semibold text-gray-900">Knowledge Governance</h1>
+                    <div className="flex justify-between items-center">
+                        <h1 className="text-xl font-semibold text-gray-900">Knowledge Governance</h1>
+                        <nav className="flex space-x-4">
+                            <button
+                                className="px-4 py-2 text-purple-600 font-medium border-b-2 border-purple-600"
+                            >
+                                Governance
+                            </button>
+                            <button
+                                onClick={() => {
+                                    console.log('Navigating to knowledge-consumption.html');
+                                    window.location.href = '/knowledge-consumption.html';
+                                }}
+                                className="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium"
+                            >
+                                Consumption Workflow
+                            </button>
+                        </nav>
+                    </div>
                 </div>
             </div>
 
             <div className="max-w-7xl mx-auto px-6 py-8">
-                <ProgressBar />
+                <ProgressBar/>
 
-                {currentScreen === 1 && <UploadScreen />}
-                {currentScreen === 2 && <DocumentQualityScreen />}
-                {currentScreen === 3 && <GovernanceScreen />}
-                {currentScreen === 4 && <ReviewScreen />}
+                {currentScreen === 1 && <UploadScreen/>}
+                {currentScreen === 2 && <DocumentQualityScreen/>}
+                {currentScreen === 3 && <GovernanceScreen/>}
+                {currentScreen === 4 && <ReviewScreen/>}
             </div>
         </div>
     );
 };
 
-export default KnowledgeGovernanceApp;
+export default App;
