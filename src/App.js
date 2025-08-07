@@ -1,8 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, Eye, Settings, Check, X, AlertTriangle, Edit3, Users, Tag, Calendar, Archive, RefreshCw, Copy, Merge, Plus } from 'lucide-react';
+import KnowledgeConsumption from './knowledgeConsumption';
 
 const App = () => {
     const [currentScreen, setCurrentScreen] = useState(1);
+    const [currentView, setCurrentView] = useState('governance'); // Add missing state
     const [uploadedFile, setUploadedFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [ocrText, setOcrText] = useState('');
@@ -13,6 +15,11 @@ const App = () => {
         { title: 'Technical Architecture Guidelines', similarity: 64, status: 'archived' }
     ]);
     const fileInputRef = useRef(null);
+
+    // If consumption view is selected, render KnowledgeConsumption component
+    if (currentView === 'consumption') {
+        return <KnowledgeConsumption />;
+    }
 
     const screens = [
         { id: 1, title: 'Upload', icon: Upload },
@@ -573,13 +580,22 @@ const App = () => {
                         <h1 className="text-xl font-semibold text-gray-900">Knowledge Governance</h1>
                         <nav className="flex space-x-4">
                             <button
-                                className="px-4 py-2 text-purple-600 font-medium border-b-2 border-purple-600"
+                                onClick={() => setCurrentView('governance')}
+                                className={`px-4 py-2 font-medium border-b-2 ${
+                                    currentView === 'governance'
+                                        ? 'text-purple-600 border-purple-600'
+                                        : 'text-gray-700 hover:text-purple-600 border-transparent'
+                                }`}
                             >
                                 Governance
                             </button>
                             <button
                                 onClick={() => setCurrentView('consumption')}
-                                className="px-4 py-2 text-gray-700 hover:text-purple-600 font-medium"
+                                className={`px-4 py-2 font-medium border-b-2 ${
+                                    currentView === 'consumption'
+                                        ? 'text-purple-600 border-purple-600'
+                                        : 'text-gray-700 hover:text-purple-600 border-transparent'
+                                }`}
                             >
                                 Consumption Workflow
                             </button>
